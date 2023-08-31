@@ -67,10 +67,10 @@ where
         self.set.superset(&other.set)
     }
 
-    /// Adds the element `elt` to `self`.
-    pub fn insert<M>(&mut self, elt: impl ToIndex<T, M>) {
+    /// Adds the element `elt` to `self`, returning true if `self` changed.
+    pub fn insert<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
-        self.set.insert(elt.index());
+        self.set.insert(elt.index())
     }
 
     /// Adds each element of `other` to `self`, returning true if `self` changed.

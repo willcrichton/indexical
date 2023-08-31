@@ -89,8 +89,8 @@ pub trait BitSet: Clone + PartialEq {
     /// Constructs a new bit-set with a domain of size `size`.
     fn empty(size: usize) -> Self;
 
-    /// Sets `index` to 1.
-    fn insert(&mut self, index: usize);
+    /// Sets `index` to 1, returning true if `self` changed.
+    fn insert(&mut self, index: usize) -> bool;
 
     /// Returns true if `index` is 1.
     fn contains(&self, index: usize) -> bool;
@@ -132,7 +132,9 @@ pub trait BitSet: Clone + PartialEq {
 }
 
 /// Coherence hack for the `ToIndex` trait.
-pub struct ValueMarker;
+pub struct OwnedMarker;
+/// Coherence hack for the `ToIndex` trait.
+pub struct RefMarker;
 /// Coherence hack for the `ToIndex` trait.
 pub struct IndexMarker;
 
@@ -146,18 +148,24 @@ pub struct IndexMarker;
 /// do not conflict.
 pub trait ToIndex<T: IndexedValue, M> {
     /// Converts `self` to an index over `T`.
-    fn to_index(&self, domain: &IndexedDomain<T>) -> T::Index;
+    fn to_index(self, domain: &IndexedDomain<T>) -> T::Index;
 }
 
-impl<T: IndexedValue> ToIndex<T, ValueMarker> for T {
-    fn to_index(&self, domain: &IndexedDomain<T>) -> T::Index {
+impl<T: IndexedValue> ToIndex<T, OwnedMarker> for T {
+    fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
+        domain.index(&self)
+    }
+}
+
+impl<'a, T: IndexedValue> ToIndex<T, RefMarker> for &'a T {
+    fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(self)
     }
 }
 
 impl<T: IndexedValue> ToIndex<T, IndexMarker> for T::Index {
-    fn to_index(&self, _domain: &IndexedDomain<T>) -> T::Index {
-        *self
+    fn to_index(self, _domain: &IndexedDomain<T>) -> T::Index {
+        self
     }
 }
 
@@ -187,7 +195,7 @@ macro_rules! define_index_type {
       $($CONFIG_NAME = $value;)*
     }
 
-    impl IndexedValue for $target {
+    impl $crate::IndexedValue for $target {
       type Index = $type;
     }
   }

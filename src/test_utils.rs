@@ -1,4 +1,4 @@
-use crate::{define_index_type, BitSet, IndexedValue};
+use crate::{define_index_type, BitSet};
 
 define_index_type! {
   pub struct StrIdx for &'static str = u32;

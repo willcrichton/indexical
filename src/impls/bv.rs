@@ -13,8 +13,10 @@ impl BitSet for BitVec {
         self[index]
     }
 
-    fn insert(&mut self, index: usize) {
+    fn insert(&mut self, index: usize) -> bool {
+        let contained = self[index];
         self.set(index, true);
+        !contained
     }
 
     fn iter(&self) -> Self::Iter<'_> {

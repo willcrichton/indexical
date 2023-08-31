@@ -36,8 +36,8 @@ where
             .or_insert_with(|| self.empty_set.clone())
     }
 
-    /// Inserts a pair `(row, col)` into the matrix.
-    pub fn insert<M>(&mut self, row: R, col: impl ToIndex<C, M>) {
+    /// Inserts a pair `(row, col)` into the matrix, returning true if `self` changed.
+    pub fn insert<M>(&mut self, row: R, col: impl ToIndex<C, M>) -> bool {
         let col = col.to_index(&self.col_domain);
         self.ensure_row(row).insert(col)
     }

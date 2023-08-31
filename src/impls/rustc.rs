@@ -15,8 +15,8 @@ impl BitSet for RustcBitSet {
         self.contains(index)
     }
 
-    fn insert(&mut self, index: usize) {
-        self.insert(index);
+    fn insert(&mut self, index: usize) -> bool {
+        self.insert(index)
     }
 
     fn iter(&self) -> Self::Iter<'_> {
