@@ -1,12 +1,12 @@
-use crate::{BitSet, IndexedValue, define_index_type};
+use crate::{define_index_type, BitSet, IndexedValue};
 
 define_index_type! {
   pub struct StrIdx for &'static str = u32;
 }
 
-#[cfg(feature = "bitvec")]
+#[cfg(all(feature = "bitvec", not(feature = "rustc")))]
 pub type TestIndexSet<T> = crate::impls::BitvecIndexSet<T>;
-#[cfg(feature = "bitvec")]
+#[cfg(all(feature = "bitvec", not(feature = "rustc")))]
 pub type TestIndexMatrix<R, C> = crate::impls::BitvecIndexMatrix<R, C>;
 
 #[cfg(feature = "rustc")]

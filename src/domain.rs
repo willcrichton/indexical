@@ -4,7 +4,7 @@ use std::{collections::HashMap, fmt};
 use crate::IndexedValue;
 
 /// An indexed collection of objects, implemented with an [`IndexVec`].
-/// 
+///
 /// Contains a reverse-mapping from `T` to `T::Index` for efficient lookups of indices.
 pub struct IndexedDomain<T: IndexedValue> {
   domain: IndexVec<T::Index, T>,
@@ -13,7 +13,7 @@ pub struct IndexedDomain<T: IndexedValue> {
 
 impl<T: IndexedValue> IndexedDomain<T> {
   /// Creates a new domain from an indexed vector.
-  /// 
+  ///
   /// Consider using the [`FromIterator`] implementation if you don't want to manually construct
   /// an [`IndexVec`] object.
   pub fn new(domain: IndexVec<T::Index, T>) -> Self {
@@ -28,14 +28,14 @@ impl<T: IndexedValue> IndexedDomain<T> {
   }
 
   /// Gets the object corresponding to `index`.
-  /// 
+  ///
   /// Panics if `index` is not within the domain.
   pub fn value(&self, index: T::Index) -> &T {
     &self.domain[index]
   }
 
   /// Gets the index corresponding to `value`.
-  /// 
+  ///
   /// Panics if `value` is not within the domain.
   pub fn index(&self, value: &T) -> T::Index {
     self.reverse_map[value]

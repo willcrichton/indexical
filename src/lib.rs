@@ -23,25 +23,24 @@
 //!   pub struct StringIndex for MyString = u32;
 //! }
 //!
-//! fn main() {
-//!   // Third, create an indexed domain from a collection of objects.
-//!   let domain = Rc::new(IndexedDomain::from_iter([
-//!     MyString(String::from("Hello")), MyString(String::from("world"))
-//!   ]));
 //!
-//!   // Finally, you can make a set! Notice how you can pass either a `MyString`
-//!   // or a `StringIndex` to `set.insert(..)` and `set.contains(..)`.
-//!   let mut set = BitvecIndexSet::new(&domain);
-//!   set.insert(MyString(String::from("Hello")));
-//!   set.insert(StringIndex::from_usize(1));
-//!   assert!(set.contains(MyString(String::from("world"))));
-//! }
+//! // Third, create an indexed domain from a collection of objects.
+//! let domain = Rc::new(IndexedDomain::from_iter([
+//!   MyString(String::from("Hello")), MyString(String::from("world"))
+//! ]));
+//!
+//! // Finally, you can make a set! Notice how you can pass either a `MyString`
+//! // or a `StringIndex` to `set.insert(..)` and `set.contains(..)`.
+//! let mut set = BitvecIndexSet::new(&domain);
+//! set.insert(MyString(String::from("Hello")));
+//! set.insert(StringIndex::from_usize(1));
+//! assert!(set.contains(MyString(String::from("world"))));
 //! ```
-//! 
+//!
 //! # Design
-//! The key idea is that the [`IndexedDomain`] is wrapped in a reference-counted pointer like [`Rc`](std::rc::Rc) and shared pervasively 
+//! The key idea is that the [`IndexedDomain`] is wrapped in a reference-counted pointer like [`Rc`](std::rc::Rc) and shared pervasively
 //! across all Indexical types. All types can then use the [`IndexedDomain`] to convert between indexes and objects.
-//! 
+//!
 //! [`IndexSet`] and [`IndexMatrix`] are generic with respect to two things:
 //! 1. **The choice of bit-set implementation.** By default, Indexical includes the [`bitvec`] crate and provides the [`impls::BitvecIndexSet`] type.
 //!    You can provide your own bit-set implementation via the [`BitSet`] trait.
@@ -80,7 +79,7 @@ pub use set::IndexSet;
 
 /// Interface for bit-set implementations.
 ///
-/// Implement this trait if you want to provide a custom bit-set 
+/// Implement this trait if you want to provide a custom bit-set
 /// beneath the indexical abstractions.
 pub trait BitSet: Clone + PartialEq {
   type Iter<'a>: Iterator<Item = usize>

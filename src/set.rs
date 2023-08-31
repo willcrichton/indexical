@@ -16,7 +16,7 @@ where
   S: BitSet,
   P: PointerFamily,
 {
-  /// Creates an empty index set. 
+  /// Creates an empty index set.
   pub fn new(domain: &P::Pointer<IndexedDomain<T>>) -> Self {
     IndexSet {
       set: S::empty(domain.len()),
@@ -152,7 +152,7 @@ where
 /// Extension trait for iterators producing index sets.
 pub trait IndexSetIteratorExt<T: IndexedValue, S: BitSet, P: PointerFamily, M> {
   /// Creates an [`IndexSet`] from an iterator over `T`s.
-  /// 
+  ///
   /// We cannot just use the normal `collect` method because this requires the domain as input.
   fn collect_indices(self, domain: &P::Pointer<IndexedDomain<T>>) -> IndexSet<T, S, P>;
 }

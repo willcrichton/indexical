@@ -5,7 +5,7 @@ use std::hash::Hash;
 use crate::{BitSet, IndexSet, IndexedDomain, IndexedValue, PointerFamily, ToIndex};
 
 /// An unordered collections of pairs `(R, C)`, implemented with a sparse bit-matrix.
-/// 
+///
 /// "Sparse" means "hash map from rows to bit-sets of columns". Subsequently, only column types `C` must be indexed,
 /// while row types `R` only need be hashable.
 pub struct IndexMatrix<R, C: IndexedValue, S: BitSet, P: PointerFamily> {
@@ -29,7 +29,7 @@ where
       col_domain: col_domain.clone(),
     }
   }
-  
+
   pub(crate) fn ensure_row(&mut self, row: R) -> &mut IndexSet<C, S, P> {
     self
       .matrix
@@ -96,7 +96,7 @@ where
   P: PointerFamily,
 {
   fn eq(&self, other: &Self) -> bool {
-    &self.matrix == &other.matrix
+    self.matrix == other.matrix
   }
 }
 impl<R, C, S, P> Eq for IndexMatrix<R, C, S, P>

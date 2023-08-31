@@ -1,6 +1,6 @@
 use bitvec::{bitvec, prelude::Lsb0, slice::IterOnes, vec::BitVec};
 
-use crate::{BitSet, IndexSet, RcFamily, IndexMatrix};
+use crate::{BitSet, IndexMatrix, IndexSet, RcFamily};
 
 impl BitSet for BitVec {
   type Iter<'a> = IterOnes<'a, usize, Lsb0>;
