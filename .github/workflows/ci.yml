@@ -20,6 +20,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ env.NIGHTLY }}
+        components: rust-src, rustc-dev, llvm-tools-preview
     - name: Stable tests
       run: cargo test
     - name: Nightly tests

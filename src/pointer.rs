@@ -7,29 +7,29 @@ use std::sync::Arc;
 /// Used so to make the indexical data structures generic with respect
 /// to choice of `Rc` or `Arc` (or your own clonable smart pointer!).
 pub trait PointerFamily {
-  type Pointer<T>: Deref<Target = T> + Clone;
+    type Pointer<T>: Deref<Target = T> + Clone;
 
-  fn new<T>(value: T) -> Self::Pointer<T>;
+    fn new<T>(value: T) -> Self::Pointer<T>;
 }
 
 /// Family of [`Arc`] pointers.
 pub struct ArcFamily;
 
 impl PointerFamily for ArcFamily {
-  type Pointer<T> = Arc<T>;
+    type Pointer<T> = Arc<T>;
 
-  fn new<T>(value: T) -> Self::Pointer<T> {
-    Arc::new(value)
-  }
+    fn new<T>(value: T) -> Self::Pointer<T> {
+        Arc::new(value)
+    }
 }
 
 /// Family of [`Rc`] pointers.
 pub struct RcFamily;
 
 impl PointerFamily for RcFamily {
-  type Pointer<T> = Rc<T>;
+    type Pointer<T> = Rc<T>;
 
-  fn new<T>(value: T) -> Self::Pointer<T> {
-    Rc::new(value)
-  }
+    fn new<T>(value: T) -> Self::Pointer<T> {
+        Rc::new(value)
+    }
 }

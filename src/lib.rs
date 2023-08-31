@@ -9,8 +9,8 @@
 //! # Example
 //! ```
 //! use indexical::{
-//!   IndexedDomain, IndexedValue,
-//!   define_index_type, impls::BitvecIndexSet
+//!     IndexedDomain, IndexedValue,
+//!     define_index_type, impls::BitvecIndexSet
 //! };
 //! use std::rc::Rc;
 //!
@@ -20,13 +20,13 @@
 //!
 //! // Second, define a new index for your custom type.
 //! define_index_type! {
-//!   pub struct StringIndex for MyString = u32;
+//!     pub struct StringIndex for MyString = u32;
 //! }
 //!
 //!
 //! // Third, create an indexed domain from a collection of objects.
 //! let domain = Rc::new(IndexedDomain::from_iter([
-//!   MyString(String::from("Hello")), MyString(String::from("world"))
+//!     MyString(String::from("Hello")), MyString(String::from("world"))
 //! ]));
 //!
 //! // Finally, you can make a set! Notice how you can pass either a `MyString`
@@ -54,9 +54,9 @@
 
 #[cfg(feature = "rustc")]
 pub mod rustc {
-  extern crate rustc_driver;
-  pub extern crate rustc_index as index;
-  pub extern crate rustc_mir_dataflow as mir_dataflow;
+    extern crate rustc_driver;
+    pub extern crate rustc_index as index;
+    pub extern crate rustc_mir_dataflow as mir_dataflow;
 }
 
 use index_vec::Idx;
@@ -82,53 +82,53 @@ pub use set::IndexSet;
 /// Implement this trait if you want to provide a custom bit-set
 /// beneath the indexical abstractions.
 pub trait BitSet: Clone + PartialEq {
-  type Iter<'a>: Iterator<Item = usize>
-  where
-    Self: 'a;
+    type Iter<'a>: Iterator<Item = usize>
+    where
+        Self: 'a;
 
-  /// Constructs a new bit-set with a domain of size `size`.
-  fn empty(size: usize) -> Self;
+    /// Constructs a new bit-set with a domain of size `size`.
+    fn empty(size: usize) -> Self;
 
-  /// Sets `index` to 1.
-  fn insert(&mut self, index: usize);
+    /// Sets `index` to 1.
+    fn insert(&mut self, index: usize);
 
-  /// Returns true if `index` is 1.
-  fn contains(&self, index: usize) -> bool;
+    /// Returns true if `index` is 1.
+    fn contains(&self, index: usize) -> bool;
 
-  /// Returns an iterator over all the indices of ones in the bit-set.
-  fn iter(&self) -> Self::Iter<'_>;
+    /// Returns an iterator over all the indices of ones in the bit-set.
+    fn iter(&self) -> Self::Iter<'_>;
 
-  /// Returns the number of ones in the bit-set.
-  fn len(&self) -> usize;
+    /// Returns the number of ones in the bit-set.
+    fn len(&self) -> usize;
 
-  /// Returns true if there are no ones in the bit-set.
-  fn is_empty(&self) -> bool {
-    self.len() == 0
-  }
+    /// Returns true if there are no ones in the bit-set.
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
-  /// Adds all ones from `other` to `self`, returning true if `self` changed.
-  fn union(&mut self, other: &Self) -> bool;
+    /// Adds all ones from `other` to `self`, returning true if `self` changed.
+    fn union(&mut self, other: &Self) -> bool;
 
-  /// Removes all ones in `self` not in `other`, returning true if `self` changed.
-  fn intersect(&mut self, other: &Self) -> bool;
+    /// Removes all ones in `self` not in `other`, returning true if `self` changed.
+    fn intersect(&mut self, other: &Self) -> bool;
 
-  /// Removes all ones from `other` in `self`, returning true if `self` changed.
-  fn subtract(&mut self, other: &Self) -> bool;
+    /// Removes all ones from `other` in `self`, returning true if `self` changed.
+    fn subtract(&mut self, other: &Self) -> bool;
 
-  /// Flips all bits in `self`.
-  fn invert(&mut self);
+    /// Flips all bits in `self`.
+    fn invert(&mut self);
 
-  /// Sets all bits to 0.
-  fn clear(&mut self);
+    /// Sets all bits to 0.
+    fn clear(&mut self);
 
-  /// Returns true if all ones in `other` are a one in `self`.
-  fn superset(&self, other: &Self) -> bool {
-    let orig_len = self.len();
-    // TODO: can we avoid this clone?
-    let mut self_copy = self.clone();
-    self_copy.union(other);
-    orig_len == self_copy.len()
-  }
+    /// Returns true if all ones in `other` are a one in `self`.
+    fn superset(&self, other: &Self) -> bool {
+        let orig_len = self.len();
+        // TODO: can we avoid this clone?
+        let mut self_copy = self.clone();
+        self_copy.union(other);
+        orig_len == self_copy.len()
+    }
 }
 
 /// Coherence hack for the `ToIndex` trait.
@@ -145,28 +145,28 @@ pub struct IndexMarker;
 /// The `M` type parameter is a coherence hack to ensure the two blanket implementations
 /// do not conflict.
 pub trait ToIndex<T: IndexedValue, M> {
-  /// Converts `self` to an index over `T`.
-  fn to_index(&self, domain: &IndexedDomain<T>) -> T::Index;
+    /// Converts `self` to an index over `T`.
+    fn to_index(&self, domain: &IndexedDomain<T>) -> T::Index;
 }
 
 impl<T: IndexedValue> ToIndex<T, ValueMarker> for T {
-  fn to_index(&self, domain: &IndexedDomain<T>) -> T::Index {
-    domain.index(self)
-  }
+    fn to_index(&self, domain: &IndexedDomain<T>) -> T::Index {
+        domain.index(self)
+    }
 }
 
 impl<T: IndexedValue> ToIndex<T, IndexMarker> for T::Index {
-  fn to_index(&self, _domain: &IndexedDomain<T>) -> T::Index {
-    *self
-  }
+    fn to_index(&self, _domain: &IndexedDomain<T>) -> T::Index {
+        *self
+    }
 }
 
 /// Links a type to its index.
 ///
 /// Should be automatically implemented by the [`define_index_type`] macro.
 pub trait IndexedValue: Clone + PartialEq + Eq + Hash {
-  /// The index for `Self`.
-  type Index: Idx;
+    /// The index for `Self`.
+    type Index: Idx;
 }
 
 /// Creates a new index type and associates it with an object type.
