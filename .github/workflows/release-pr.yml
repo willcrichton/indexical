@@ -18,9 +18,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: chainguard-dev/actions/setup-gitsign@main
       - name: Install cargo-release
-        uses: taiki-e/install-action@v1
+        uses: actions-rs/install@v0.1
         with:
-          tool: cargo-release
+          crate: cargo-release
+          version: latest
+          use-tool-cache: true
       - uses: cargo-bins/release-pr@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
