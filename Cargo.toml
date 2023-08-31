@@ -2,6 +2,12 @@
 name = "indexical"
 version = "0.1.0"
 edition = "2021"
+description = "Utilities for indexed collections"
+authors = [
+  "Will Crichton <crichton.will@gmail.com>"
+]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/willcrichton/indexical"
 
 [package.metadata.rust-analyzer]
 rustc_private = true
