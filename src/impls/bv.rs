@@ -1,6 +1,6 @@
 use bitvec::{bitvec, prelude::Lsb0, slice::IterOnes, vec::BitVec};
 
-use crate::{BitSet, IndexSet, Owned, RcFamily};
+use crate::{BitSet, IndexSet, RcFamily, IndexMatrix};
 
 impl BitSet for BitVec {
   type Iter<'a> = IterOnes<'a, usize, Lsb0>;
@@ -26,19 +26,23 @@ impl BitSet for BitVec {
   }
 
   fn union(&mut self, other: &Self) -> bool {
-    let n = self.len();
+    let n = self.count_ones();
     *self |= other;
-    self.len() != n
+    self.count_ones() != n
   }
 
   fn intersect(&mut self, other: &Self) -> bool {
-    let n = self.len();
+    let n = self.count_ones();
     *self &= other;
-    self.len() != n
+    self.count_ones() != n
   }
 
   fn invert(&mut self) {
     take_mut::take(self, |this| !this)
+  }
+
+  fn clear(&mut self) {
+    self.clear();
   }
 
   fn subtract(&mut self, other: &Self) -> bool {
@@ -48,7 +52,11 @@ impl BitSet for BitVec {
   }
 }
 
-pub type BitvecIndexSet<T> = IndexSet<T, Owned<BitVec>, BitVec, RcFamily>;
+/// [`IndexSet`] specialized to the [`BitVec`] implementation.
+pub type BitvecIndexSet<T> = IndexSet<T, BitVec, RcFamily>;
+
+/// [`IndexMatrix`] specialized to the [`BitVec`] implementation.
+pub type BitvecIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, RcFamily>;
 
 #[test]
 fn test_bitvec() {

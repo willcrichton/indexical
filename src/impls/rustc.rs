@@ -1,7 +1,6 @@
-use std::ops::DerefMut;
-
 use crate::rustc::mir_dataflow::JoinSemiLattice;
-use crate::{BitSet, IndexSet, IndexedValue, Owned, PointerFamily, RcFamily};
+use crate::{BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily};
+use std::hash::Hash;
 
 pub type RustcBitSet = crate::rustc::index::bit_set::BitSet<usize>;
 
@@ -40,6 +39,10 @@ impl BitSet for RustcBitSet {
     self.subtract(other)
   }
 
+  fn clear(&mut self) {
+    self.clear();
+  }
+
   fn invert(&mut self) {
     let mut inverted = RustcBitSet::new_filled(self.domain_size());
     inverted.subtract(self);
@@ -47,17 +50,33 @@ impl BitSet for RustcBitSet {
   }
 }
 
-pub type RustcIndexSet<T> = IndexSet<T, Owned<RustcBitSet>, RustcBitSet, RcFamily>;
+pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
+pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
 
-impl<T, O, S, P> JoinSemiLattice for IndexSet<T, O, S, P>
+impl<T, S, P> JoinSemiLattice for IndexSet<T, S, P>
 where
   T: IndexedValue,
-  O: DerefMut<Target = S>,
   S: BitSet,
   P: PointerFamily,
 {
   fn join(&mut self, other: &Self) -> bool {
     self.union(other)
+  }
+}
+
+impl<R, C, S, P> JoinSemiLattice for IndexMatrix<R, C, S, P>
+where
+  R: PartialEq + Eq + Hash + Clone,
+  C: IndexedValue,
+  S: BitSet,
+  P: PointerFamily,
+{
+  fn join(&mut self, other: &Self) -> bool {
+    let mut changed = false;
+    for (row, col) in other.matrix.iter() {
+      changed |= self.ensure_row(row.clone()).union(col);
+    }
+    changed
   }
 }
 
