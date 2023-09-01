@@ -2,15 +2,16 @@
 //! "Indexed" means that the domain of objects is finite, and you can assign a numeric index to each object.
 //! This enables the use of efficient data structures like bit-sets.
 //!
-//! Indexical is a layer on top of existing bit-set libraries like [bitvec] and [rustc_index].
+//! Indexical is a layer on top of existing bit-set libraries like [`bitvec`](https://github.com/ferrilab/bitvec)
+//! and [`rustc_index::bit_set`](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_index/bit_set/index.html).
 //! Those data structures only "understand" indexes, not the objects represented by the index.
 //! Indexical provides utilities for converting between the object domain and the index domain.
 //!
 //! # Example
 //! ```
 //! use indexical::{
-//!     IndexedDomain, IndexedValue,
-//!     define_index_type, impls::BitvecIndexSet
+//!     IndexedDomain, IndexedValue, define_index_type,
+//!     impls::BitvecIndexSet as IndexSet
 //! };
 //! use std::rc::Rc;
 //!
@@ -23,7 +24,6 @@
 //!     pub struct StringIndex for MyString = u32;
 //! }
 //!
-//!
 //! // Third, create an indexed domain from a collection of objects.
 //! let domain = Rc::new(IndexedDomain::from_iter([
 //!     MyString(String::from("Hello")), MyString(String::from("world"))
@@ -31,7 +31,7 @@
 //!
 //! // Finally, you can make a set! Notice how you can pass either a `MyString`
 //! // or a `StringIndex` to `set.insert(..)` and `set.contains(..)`.
-//! let mut set = BitvecIndexSet::new(&domain);
+//! let mut set = IndexSet::new(&domain);
 //! set.insert(MyString(String::from("Hello")));
 //! set.insert(StringIndex::from_usize(1));
 //! assert!(set.contains(MyString(String::from("world"))));
@@ -39,25 +39,16 @@
 //!
 //! # Design
 //! The key idea is that the [`IndexedDomain`] is wrapped in a reference-counted pointer like [`Rc`](std::rc::Rc) and shared pervasively
-//! across all Indexical types. All types can then use the [`IndexedDomain`] to convert between indexes and objects.
+//! across all Indexical types. All types can then use the [`IndexedDomain`] to convert between indexes and objects, usually via the [`ToIndex`] trait.
 //!
 //! [`IndexSet`] and [`IndexMatrix`] are generic with respect to two things:
 //! 1. **The choice of bit-set implementation.** By default, Indexical includes the [`bitvec`] crate and provides the [`impls::BitvecIndexSet`] type.
 //!    You can provide your own bit-set implementation via the [`BitSet`] trait.
 //! 2. **The choice of reference-counted pointer.** By default, Indexical uses the [`Rc`](std::rc::Rc) pointer via the [`RcFamily`] type.
 //!    You can choose to use the [`ArcFamily`] if you need concurrency. You can also implement your own pointer family.
-//!
-//! [bitvec]: https://github.com/ferrilab/bitvec
-//! [rustc_index]: (https://doc.rust-lang.org/nightly/nightly-rustc/rustc_index
 
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
-
-#[cfg(feature = "rustc")]
-pub mod rustc {
-    extern crate rustc_driver;
-    pub extern crate rustc_index as index;
-    pub extern crate rustc_mir_dataflow as mir_dataflow;
-}
+#![warn(missing_docs)]
 
 use index_vec::Idx;
 use std::hash::Hash;
@@ -82,6 +73,7 @@ pub use set::IndexSet;
 /// Implement this trait if you want to provide a custom bit-set
 /// beneath the indexical abstractions.
 pub trait BitSet: Clone + PartialEq {
+    /// Type of iterator returned by `iter`.
     type Iter<'a>: Iterator<Item = usize>
     where
         Self: 'a;
@@ -132,11 +124,11 @@ pub trait BitSet: Clone + PartialEq {
 }
 
 /// Coherence hack for the `ToIndex` trait.
-pub struct OwnedMarker;
+pub struct MarkerOwned;
 /// Coherence hack for the `ToIndex` trait.
-pub struct RefMarker;
+pub struct MarkerRef;
 /// Coherence hack for the `ToIndex` trait.
-pub struct IndexMarker;
+pub struct MarkerIndex;
 
 /// Implicit conversions from elements to indexes.
 /// Commonly used in the [`IndexSet`] and [`IndexMatrix`] interfaces.
@@ -151,19 +143,19 @@ pub trait ToIndex<T: IndexedValue, M> {
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index;
 }
 
-impl<T: IndexedValue> ToIndex<T, OwnedMarker> for T {
+impl<T: IndexedValue> ToIndex<T, MarkerOwned> for T {
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(&self)
     }
 }
 
-impl<'a, T: IndexedValue> ToIndex<T, RefMarker> for &'a T {
+impl<'a, T: IndexedValue> ToIndex<T, MarkerRef> for &'a T {
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(self)
     }
 }
 
-impl<T: IndexedValue> ToIndex<T, IndexMarker> for T::Index {
+impl<T: IndexedValue> ToIndex<T, MarkerIndex> for T::Index {
     fn to_index(self, _domain: &IndexedDomain<T>) -> T::Index {
         self
     }

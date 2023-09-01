@@ -1,11 +1,15 @@
-use crate::rustc::mir_dataflow::JoinSemiLattice;
+extern crate rustc_driver;
+extern crate rustc_index;
+extern crate rustc_mir_dataflow;
+
 use crate::{BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily};
+use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;
 
-pub type RustcBitSet = crate::rustc::index::bit_set::BitSet<usize>;
+pub type RustcBitSet = rustc_index::bit_set::BitSet<usize>;
 
 impl BitSet for RustcBitSet {
-    type Iter<'a> = crate::rustc::index::bit_set::BitIter<'a, usize>;
+    type Iter<'a> = rustc_index::bit_set::BitIter<'a, usize>;
 
     fn empty(size: usize) -> Self {
         RustcBitSet::new_empty(size)
@@ -50,7 +54,10 @@ impl BitSet for RustcBitSet {
     }
 }
 
+/// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation.
 pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
+
+/// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation.
 pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
 
 impl<T, S, P> JoinSemiLattice for IndexSet<T, S, P>

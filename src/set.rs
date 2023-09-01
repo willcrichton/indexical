@@ -57,7 +57,7 @@ where
         self.set.len()
     }
 
-    // Return true if `self` has no elements.
+    /// Return true if `self` has no elements.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }

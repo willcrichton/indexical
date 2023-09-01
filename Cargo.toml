@@ -1,6 +1,6 @@
 [package]
 name = "indexical"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 description = "Utilities for indexed collections"
 authors = [
@@ -19,7 +19,8 @@ default = ["bitvec"]
 
 [dependencies]
 bitvec = { version = "1.0.1", optional = true }
+take_mut = { version = "0.2.2", optional = true }
 fxhash = "0.2.1"
 index_vec = "0.1.3"
 splitmut = "0.2.1"
-take_mut = { version = "0.2.2", optional = true }
+
