@@ -3,7 +3,7 @@
 #[cfg(feature = "bitvec")]
 mod bv;
 #[cfg(feature = "bitvec")]
-pub use bv::{BitvecIndexMatrix, BitvecIndexSet};
+pub use bv::{BitvecArcIndexMatrix, BitvecIndexMatrix, BitvecIndexSet};
 
 #[cfg(feature = "rustc")]
 mod rustc;

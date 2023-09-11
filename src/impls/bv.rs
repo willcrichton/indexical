@@ -1,6 +1,6 @@
 use bitvec::{bitvec, prelude::Lsb0, slice::IterOnes, vec::BitVec};
 
-use crate::{BitSet, IndexMatrix, IndexSet, RcFamily};
+use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily};
 
 impl BitSet for BitVec {
     type Iter<'a> = IterOnes<'a, usize, Lsb0>;
@@ -59,6 +59,9 @@ pub type BitvecIndexSet<T> = IndexSet<T, BitVec, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation.
 pub type BitvecIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, RcFamily>;
+
+/// [`IndexMatrix`] specialized to the [`BitVec`] implementation with the [`ArcFamily`].
+pub type BitvecArcIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, ArcFamily>;
 
 #[test]
 fn test_bitvec() {

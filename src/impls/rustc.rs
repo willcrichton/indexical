@@ -60,6 +60,9 @@ pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation.
 pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
 
+/// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
+pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, ArcFamily>;
+
 impl<T, S, P> JoinSemiLattice for IndexSet<T, S, P>
 where
     T: IndexedValue,

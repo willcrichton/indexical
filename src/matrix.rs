@@ -1,6 +1,6 @@
 use fxhash::FxHashMap;
 use splitmut::SplitMut;
-use std::hash::Hash;
+use std::{fmt, hash::Hash};
 
 use crate::{BitSet, IndexSet, IndexedDomain, IndexedValue, PointerFamily, ToIndex};
 
@@ -133,6 +133,18 @@ where
 
         self.empty_set = source.empty_set.clone();
         self.col_domain = source.col_domain.clone();
+    }
+}
+
+impl<R, C, S, P> fmt::Debug for IndexMatrix<R, C, S, P>
+where
+    R: PartialEq + Eq + Hash + Clone + fmt::Debug,
+    C: IndexedValue + fmt::Debug,
+    S: BitSet,
+    P: PointerFamily,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_map().entries(self.rows()).finish()
     }
 }
 
