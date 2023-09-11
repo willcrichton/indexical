@@ -2,7 +2,7 @@ extern crate rustc_driver;
 extern crate rustc_index;
 extern crate rustc_mir_dataflow;
 
-use crate::{BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily};
+use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily};
 use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;
 
@@ -61,7 +61,7 @@ pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
 pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, ArcFamily>;
+pub type RustcArcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, ArcFamily>;
 
 impl<T, S, P> JoinSemiLattice for IndexSet<T, S, P>
 where

@@ -8,4 +8,4 @@ pub use bv::{BitvecArcIndexMatrix, BitvecIndexMatrix, BitvecIndexSet};
 #[cfg(feature = "rustc")]
 mod rustc;
 #[cfg(feature = "rustc")]
-pub use rustc::{RustcIndexMatrix, RustcIndexSet};
+pub use rustc::{RustcArcIndexMatrix, RustcIndexMatrix, RustcIndexSet};
