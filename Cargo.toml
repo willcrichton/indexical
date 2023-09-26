@@ -1,6 +1,6 @@
 [package]
 name = "indexical"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 description = "Utilities for indexed collections"
 authors = [
@@ -14,7 +14,7 @@ rustc_private = true
 
 [features]
 rustc = []
-bitvec = ["dep:bitvec", "take_mut"]
+bitvec = ["dep:bitvec", "dep:take_mut"]
 default = ["bitvec"]
 
 [dependencies]

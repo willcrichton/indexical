@@ -66,7 +66,7 @@ pub use index_vec;
 pub use domain::IndexedDomain;
 pub use matrix::IndexMatrix;
 pub use pointer::*;
-pub use set::IndexSet;
+pub use set::{IndexSet, IndexSetIteratorExt};
 
 /// Interface for bit-set implementations.
 ///
