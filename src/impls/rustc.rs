@@ -1,5 +1,5 @@
 extern crate rustc_driver;
-extern crate rustc_index;
+pub extern crate rustc_index;
 extern crate rustc_mir_dataflow;
 
 use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily};

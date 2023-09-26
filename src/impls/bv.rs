@@ -1,12 +1,14 @@
-use bitvec::{bitvec, prelude::Lsb0, slice::IterOnes, vec::BitVec};
+use bitvec::{prelude::Lsb0, slice::IterOnes, vec::BitVec};
 
 use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily};
+
+pub use bitvec;
 
 impl BitSet for BitVec {
     type Iter<'a> = IterOnes<'a, usize, Lsb0>;
 
     fn empty(size: usize) -> Self {
-        bitvec![usize, Lsb0; 0; size]
+        bitvec::bitvec![usize, Lsb0; 0; size]
     }
 
     fn contains(&self, index: usize) -> bool {
