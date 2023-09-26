@@ -57,6 +57,9 @@ impl BitSet for BitVec {
 /// [`IndexSet`] specialized to the [`BitVec`] implementation.
 pub type BitvecIndexSet<T> = IndexSet<T, BitVec, RcFamily>;
 
+/// [`IndexSet`] specialized to the [`BitVec`] implementation with the [`ArcFamily`].
+pub type BitvecArcIndexSet<T> = IndexSet<T, BitVec, ArcFamily>;
+
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation.
 pub type BitvecIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, RcFamily>;
 

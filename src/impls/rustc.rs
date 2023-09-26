@@ -57,6 +57,9 @@ impl BitSet for RustcBitSet {
 /// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation.
 pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
 
+/// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
+pub type RustcArcIndexSet<T> = IndexSet<T, RustcBitSet, ArcFamily>;
+
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation.
 pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
 

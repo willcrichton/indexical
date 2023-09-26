@@ -98,6 +98,11 @@ where
     pub fn clear(&mut self) {
         self.set.clear();
     }
+
+    /// Returns a reference to the inner set.
+    pub fn inner(&self) -> &S {
+        &self.set
+    }
 }
 
 impl<T, S, P> fmt::Debug for IndexSet<T, S, P>
