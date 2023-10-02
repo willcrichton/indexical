@@ -2,7 +2,9 @@ extern crate rustc_driver;
 pub extern crate rustc_index;
 extern crate rustc_mir_dataflow;
 
-use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily};
+use crate::{
+    ArcFamily, BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily, RefFamily,
+};
 use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;
 
@@ -27,7 +29,11 @@ impl BitSet for RustcBitSet {
         self.iter()
     }
 
-    fn intersect(&mut self, other: &Self) -> bool {
+    fn intersect(&mut self, other: &Self) {
+        self.intersect(other);
+    }
+
+    fn intersect_changed(&mut self, other: &Self) -> bool {
         self.intersect(other)
     }
 
@@ -35,11 +41,19 @@ impl BitSet for RustcBitSet {
         self.count()
     }
 
-    fn union(&mut self, other: &Self) -> bool {
+    fn union(&mut self, other: &Self) {
+        self.union(other);
+    }
+
+    fn union_changed(&mut self, other: &Self) -> bool {
         self.union(other)
     }
 
-    fn subtract(&mut self, other: &Self) -> bool {
+    fn subtract(&mut self, other: &Self) {
+        self.subtract(other);
+    }
+
+    fn subtract_changed(&mut self, other: &Self) -> bool {
         self.subtract(other)
     }
 
@@ -52,6 +66,14 @@ impl BitSet for RustcBitSet {
         inverted.subtract(self);
         *self = inverted;
     }
+
+    fn insert_all(&mut self) {
+        self.insert_all();
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        self.clone_from(other);
+    }
 }
 
 /// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation.
@@ -60,11 +82,17 @@ pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
 /// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
 pub type RustcArcIndexSet<T> = IndexSet<T, RustcBitSet, ArcFamily>;
 
+/// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`RefFamily`].
+pub type RustcRefIndexSet<'a, T> = IndexSet<T, RustcBitSet, RefFamily<'a>>;
+
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation.
 pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
 pub type RustcArcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, ArcFamily>;
+
+/// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`RefFamily`].
+pub type RustcRefIndexMatrix<'a, R, C> = IndexMatrix<R, C, RustcBitSet, RefFamily<'a>>;
 
 impl<T, S, P> JoinSemiLattice for IndexSet<T, S, P>
 where
@@ -73,7 +101,7 @@ where
     P: PointerFamily,
 {
     fn join(&mut self, other: &Self) -> bool {
-        self.union(other)
+        self.union_changed(other)
     }
 }
 
@@ -87,7 +115,7 @@ where
     fn join(&mut self, other: &Self) -> bool {
         let mut changed = false;
         for (row, col) in other.matrix.iter() {
-            changed |= self.ensure_row(row.clone()).union(col);
+            changed |= self.ensure_row(row.clone()).union_changed(col);
         }
         changed
     }

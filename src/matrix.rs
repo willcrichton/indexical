@@ -44,7 +44,7 @@ where
 
     /// Adds all elements of `from` into the row `into`.
     pub fn union_into_row(&mut self, into: R, from: &IndexSet<C, S, P>) -> bool {
-        self.ensure_row(into).union(from)
+        self.ensure_row(into).union_changed(from)
     }
 
     /// Adds all elements from the row `from` into the row `into`.
@@ -58,7 +58,7 @@ where
 
         // SAFETY: `from` != `to` therefore this is a disjoint mutable borrow
         let (from, to) = unsafe { self.matrix.get2_unchecked_mut(&from, &to) };
-        to.union(from)
+        to.union_changed(from)
     }
 
     /// Returns an iterator over the elements in `row`.

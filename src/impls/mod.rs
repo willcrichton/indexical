@@ -6,6 +6,7 @@ mod bv;
 pub use bv::{
     bitvec::{self, vec::BitVec},
     BitvecArcIndexMatrix, BitvecArcIndexSet, BitvecIndexMatrix, BitvecIndexSet,
+    BitvecRefIndexMatrix, BitvecRefIndexSet,
 };
 
 #[cfg(feature = "rustc")]
@@ -13,5 +14,6 @@ mod rustc;
 #[cfg(feature = "rustc")]
 pub use rustc::{
     rustc_index::bit_set::{self, BitSet},
-    RustcArcIndexMatrix, RustcArcIndexSet, RustcIndexMatrix, RustcIndexSet,
+    RustcArcIndexMatrix, RustcArcIndexSet, RustcIndexMatrix, RustcIndexSet, RustcRefIndexMatrix,
+    RustcRefIndexSet,
 };

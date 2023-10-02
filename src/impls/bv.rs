@@ -1,6 +1,6 @@
 use bitvec::{prelude::Lsb0, slice::IterOnes, vec::BitVec};
 
-use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily};
+use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
 
 pub use bitvec;
 
@@ -29,16 +29,12 @@ impl BitSet for BitVec {
         self.count_ones()
     }
 
-    fn union(&mut self, other: &Self) -> bool {
-        let n = self.count_ones();
+    fn union(&mut self, other: &Self) {
         *self |= other;
-        self.count_ones() != n
     }
 
-    fn intersect(&mut self, other: &Self) -> bool {
-        let n = self.count_ones();
+    fn intersect(&mut self, other: &Self) {
         *self &= other;
-        self.count_ones() != n
     }
 
     fn invert(&mut self) {
@@ -49,10 +45,18 @@ impl BitSet for BitVec {
         self.clear();
     }
 
-    fn subtract(&mut self, other: &Self) -> bool {
+    fn subtract(&mut self, other: &Self) {
         let mut other_copy = other.clone();
         other_copy.invert();
-        self.intersect(&other_copy)
+        self.intersect(&other_copy);
+    }
+
+    fn insert_all(&mut self) {
+        self.fill(true);
+    }
+
+    fn copy_from(&mut self, other: &Self) {
+        self.copy_from_bitslice(other);
     }
 }
 
@@ -62,11 +66,17 @@ pub type BitvecIndexSet<T> = IndexSet<T, BitVec, RcFamily>;
 /// [`IndexSet`] specialized to the [`BitVec`] implementation with the [`ArcFamily`].
 pub type BitvecArcIndexSet<T> = IndexSet<T, BitVec, ArcFamily>;
 
+/// [`IndexSet`] specialized to the [`BitVec`] implementation with the [`RefFamily`].
+pub type BitvecRefIndexSet<'a, T> = IndexSet<T, BitVec, RefFamily<'a>>;
+
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation.
 pub type BitvecIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation with the [`ArcFamily`].
 pub type BitvecArcIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, ArcFamily>;
+
+/// [`IndexMatrix`] specialized to the [`BitVec`] implementation with the [`RefFamily`].
+pub type BitvecRefIndexMatrix<'a, R, C> = IndexMatrix<R, C, BitVec, RefFamily<'a>>;
 
 #[test]
 fn test_bitvec() {

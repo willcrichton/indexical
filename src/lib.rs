@@ -98,20 +98,48 @@ pub trait BitSet: Clone + PartialEq {
         self.len() == 0
     }
 
+    // Note: we have the `_changed` methods separated out because
+    // if you don't care about the return value, then it's just extra
+    // computation w/ some APIs like bitvec.
+
+    /// Adds all ones from `other` to `self`.
+    fn union(&mut self, other: &Self);
+
     /// Adds all ones from `other` to `self`, returning true if `self` changed.
-    fn union(&mut self, other: &Self) -> bool;
+    fn union_changed(&mut self, other: &Self) -> bool {
+        let n = self.len();
+        self.union(other);
+        n != self.len()
+    }
+
+    /// Removes all ones in `self` not in `other`.
+    fn intersect(&mut self, other: &Self);
 
     /// Removes all ones in `self` not in `other`, returning true if `self` changed.
-    fn intersect(&mut self, other: &Self) -> bool;
+    fn intersect_changed(&mut self, other: &Self) -> bool {
+        let n = self.len();
+        self.intersect(other);
+        n != self.len()
+    }
+
+    /// Removes all ones from `other` in `self`.
+    fn subtract(&mut self, other: &Self);
 
     /// Removes all ones from `other` in `self`, returning true if `self` changed.
-    fn subtract(&mut self, other: &Self) -> bool;
+    fn subtract_changed(&mut self, other: &Self) -> bool {
+        let n = self.len();
+        self.intersect(other);
+        n != self.len()
+    }
 
     /// Flips all bits in `self`.
     fn invert(&mut self);
 
     /// Sets all bits to 0.
     fn clear(&mut self);
+
+    /// Adds every element of the domain to `self`.
+    fn insert_all(&mut self);
 
     /// Returns true if all ones in `other` are a one in `self`.
     fn superset(&self, other: &Self) -> bool {
@@ -121,6 +149,9 @@ pub trait BitSet: Clone + PartialEq {
         self_copy.union(other);
         orig_len == self_copy.len()
     }
+
+    /// Copies `other` into `self`. Must have the same lengths.
+    fn copy_from(&mut self, other: &Self);
 }
 
 /// Coherence hack for the `ToIndex` trait.
@@ -164,7 +195,7 @@ impl<T: IndexedValue> ToIndex<T, MarkerIndex> for T::Index {
 /// Links a type to its index.
 ///
 /// Should be automatically implemented by the [`define_index_type`] macro.
-pub trait IndexedValue: Clone + PartialEq + Eq + Hash {
+pub trait IndexedValue: Clone + PartialEq + Eq + Hash + 'static {
     /// The index for `Self`.
     type Index: Idx;
 }

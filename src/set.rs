@@ -73,25 +73,39 @@ where
         self.set.insert(elt.index())
     }
 
-    /// Adds each element of `other` to `self`, returning true if `self` changed.
-    pub fn union(&mut self, other: &IndexSet<T, S, P>) -> bool {
-        self.set.union(&other.set)
+    /// Adds each element of `other` to `self`.
+    pub fn union(&mut self, other: &IndexSet<T, S, P>) {
+        self.set.union(&other.set);
     }
 
-    /// Removes every element of `other` from `self`, returning true if `self` changed.
-    pub fn subtract(&mut self, other: &IndexSet<T, S, P>) -> bool {
+    /// Adds each element of `other` to `self`, returning true if `self` changed.
+    pub fn union_changed(&mut self, other: &IndexSet<T, S, P>) -> bool {
+        self.set.union_changed(&other.set)
+    }
+
+    /// Removes every element of `other` from `self`.
+    pub fn subtract(&mut self, other: &IndexSet<T, S, P>) {
         self.set.subtract(&other.set)
     }
 
-    /// Removes every element of `self` not in `other`, returning true if `self` changed.
-    pub fn intersect(&mut self, other: &IndexSet<T, S, P>) -> bool {
+    /// Removes every element of `other` from `self`, returning true if `self` changed.
+    pub fn subtract_changed(&mut self, other: &IndexSet<T, S, P>) -> bool {
+        self.set.subtract_changed(&other.set)
+    }
+
+    /// Removes every element of `self` not in `other`.
+    pub fn intersect(&mut self, other: &IndexSet<T, S, P>) {
         self.set.intersect(&other.set)
+    }
+
+    /// Removes every element of `self` not in `other`, returning true if `self` changed.
+    pub fn intersect_changed(&mut self, other: &IndexSet<T, S, P>) -> bool {
+        self.set.intersect_changed(&other.set)
     }
 
     /// Adds every element of the domain to `self`.
     pub fn insert_all(&mut self) {
-        self.set = S::empty(self.domain.len());
-        self.set.invert();
+        self.set.insert_all()
     }
 
     /// Removes every element from `self`.
@@ -149,7 +163,7 @@ where
     }
 
     fn clone_from(&mut self, source: &Self) {
-        self.set.clone_from(&source.set);
+        self.set.copy_from(&source.set);
         self.domain = source.domain.clone();
     }
 }
@@ -197,5 +211,17 @@ mod test {
 
         assert_eq!(["a", "b"].into_iter().collect_indices(&d), s);
         assert_eq!(format!("{s:?}"), r#"{"a", "b"}"#)
+    }
+
+    #[cfg(feature = "bitvec")]
+    #[test]
+    fn test_indexset_reffamily() {
+        let d = &IndexedDomain::from_iter(["a", "b", "c"]);
+        let mut s = crate::impls::BitvecRefIndexSet::new(&d);
+        s.insert("a");
+        assert!(s.contains("a"));
+
+        let s2 = s.clone();
+        assert!(std::ptr::eq(s.domain, s2.domain));
     }
 }

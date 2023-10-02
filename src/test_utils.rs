@@ -32,6 +32,7 @@ pub fn impl_test<T: BitSet>() {
     bv2.insert(1);
     assert!(!bv.superset(&bv2));
 
-    assert!(bv.intersect(&bv2));
+    assert!(bv.intersect_changed(&bv2));
+    assert!(!bv.intersect_changed(&bv2));
     assert_eq!(bv.iter().collect::<Vec<_>>(), vec![5]);
 }
