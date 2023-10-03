@@ -1,3 +1,5 @@
+/// Implementation is largely derived from the `bitsvec` crate: <https://github.com/psiace/bitsvec>
+
 use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
 use std::{
     mem::size_of,
