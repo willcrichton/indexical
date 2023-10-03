@@ -1,51 +1,13 @@
-//! Indexical is a library for efficiently working with indexed collections of objects.
-//! "Indexed" means that the domain of objects is finite, and you can assign a numeric index to each object.
-//! This enables the use of efficient data structures like bit-sets.
-//!
-//! Indexical is a layer on top of existing bit-set libraries like [`bitvec`](https://github.com/ferrilab/bitvec)
-//! and [`rustc_index::bit_set`](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_index/bit_set/index.html).
-//! Those data structures only "understand" indexes, not the objects represented by the index.
-//! Indexical provides utilities for converting between the object domain and the index domain.
-//!
-//! # Example
-//! ```
-//! use indexical::{
-//!     IndexedDomain, IndexedValue, define_index_type,
-//!     impls::BitvecIndexSet as IndexSet
-//! };
-//! use std::rc::Rc;
-//!
-//! // First, define a custom type.
-//! #[derive(PartialEq, Eq, Clone, Hash)]
-//! pub struct MyString(String);
-//!
-//! // Second, define a new index for your custom type.
-//! define_index_type! {
-//!     pub struct StringIndex for MyString = u32;
-//! }
-//!
-//! // Third, create an indexed domain from a collection of objects.
-//! let domain = Rc::new(IndexedDomain::from_iter([
-//!     MyString(String::from("Hello")), MyString(String::from("world"))
-//! ]));
-//!
-//! // Finally, you can make a set! Notice how you can pass either a `MyString`
-//! // or a `StringIndex` to `set.insert(..)` and `set.contains(..)`.
-//! let mut set = IndexSet::new(&domain);
-//! set.insert(MyString(String::from("Hello")));
-//! set.insert(StringIndex::from_usize(1));
-//! assert!(set.contains(MyString(String::from("world"))));
-//! ```
-//!
-//! # Design
-//! The key idea is that the [`IndexedDomain`] is wrapped in a reference-counted pointer like [`Rc`](std::rc::Rc) and shared pervasively
+#![doc = include_str!("../README.md")]
+//! ## Design
+//! The key idea is that the [`IndexedDomain`] is shared pervasively
 //! across all Indexical types. All types can then use the [`IndexedDomain`] to convert between indexes and objects, usually via the [`ToIndex`] trait.
-//!
+//! 
 //! [`IndexSet`] and [`IndexMatrix`] are generic with respect to two things:
 //! 1. **The choice of bit-set implementation.** By default, Indexical includes the [`bitvec`] crate and provides the [`impls::BitvecIndexSet`] type.
 //!    You can provide your own bit-set implementation via the [`BitSet`] trait.
-//! 2. **The choice of reference-counted pointer.** By default, Indexical uses the [`Rc`](std::rc::Rc) pointer via the [`RcFamily`] type.
-//!    You can choose to use the [`ArcFamily`] if you need concurrency. You can also implement your own pointer family.
+//! 2. **The choice of domain pointer.** By default, Indexical uses the [`Rc`](std::rc::Rc) pointer via the [`RcFamily`] type.
+//!    You can choose to use the [`ArcFamily`] if you need concurrency, or the [`RefFamily`] if you want to avoid reference-counting.
 
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
 #![cfg_attr(feature = "simd", feature(portable_simd, unchecked_math))]
