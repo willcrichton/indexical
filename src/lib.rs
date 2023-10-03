@@ -2,7 +2,7 @@
 //! ## Design
 //! The key idea is that the [`IndexedDomain`] is shared pervasively
 //! across all Indexical types. All types can then use the [`IndexedDomain`] to convert between indexes and objects, usually via the [`ToIndex`] trait.
-//! 
+//!
 //! [`IndexSet`] and [`IndexMatrix`] are generic with respect to two things:
 //! 1. **The choice of bit-set implementation.** By default, Indexical includes the [`bitvec`] crate and provides the [`impls::BitvecIndexSet`] type.
 //!    You can provide your own bit-set implementation via the [`BitSet`] trait.
