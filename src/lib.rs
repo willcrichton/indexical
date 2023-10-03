@@ -48,6 +48,7 @@
 //!    You can choose to use the [`ArcFamily`] if you need concurrency. You can also implement your own pointer family.
 
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
+#![cfg_attr(feature = "simd", feature(portable_simd, unchecked_math))]
 #![warn(missing_docs)]
 
 use index_vec::Idx;

@@ -35,4 +35,17 @@ pub fn impl_test<T: BitSet>() {
     assert!(bv.intersect_changed(&bv2));
     assert!(!bv.intersect_changed(&bv2));
     assert_eq!(bv.iter().collect::<Vec<_>>(), vec![5]);
+
+    let mut bv = T::empty(64 * 4 + 1);
+    bv.insert(64 * 4);
+    assert!(!bv.contains(64 * 4 - 1));
+    assert!(bv.contains(64 * 4));
+
+    let mut bv = T::empty(10);
+    bv.insert(0);
+    bv.insert(1);
+    let mut bv2 = T::empty(10);
+    bv2.insert(0);
+    bv.subtract(&bv2);
+    assert_eq!(bv.iter().collect::<Vec<_>>(), vec![1]);
 }

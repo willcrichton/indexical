@@ -24,7 +24,7 @@ jobs:
     - name: Stable tests
       run: cargo test
     - name: Nightly tests
-      run: cargo +${{ env.NIGHTLY }} test --features rustc
+      run: cargo +${{ env.NIGHTLY }} test --features simd --features rustc
 
   formatting:
     name: Formatting

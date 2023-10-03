@@ -17,3 +17,11 @@ pub use rustc::{
     RustcArcIndexMatrix, RustcArcIndexSet, RustcIndexMatrix, RustcIndexSet, RustcRefIndexMatrix,
     RustcRefIndexSet,
 };
+
+#[cfg(feature = "simd")]
+mod simd;
+#[cfg(feature = "simd")]
+pub use simd::{
+    SimdArcIndexMatrix, SimdArcIndexSet, SimdBitset, SimdIndexMatrix, SimdIndexSet,
+    SimdRefIndexMatrix, SimdRefIndexSet, SimdSetElement,
+};
