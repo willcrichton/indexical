@@ -3,12 +3,16 @@
 //! Implementation is largely derived from the `bitsvec` crate: <https://github.com/psiace/bitsvec>
 //! The main difference is I made a much more efficient iterator that computes the indices
 //! of the 1-bits.
+//!
+//! **WARNING:** this module makes liberal use of unsafe code and has not been thoroughly vetted,
+//! so use it at your own risk.
 
 use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
 use std::{
     mem::size_of,
     ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not},
     simd::{LaneCount, Simd, SimdElement, SupportedLaneCount},
+    slice,
 };
 
 /// Capabilities of an element that represent a SIMD lane
@@ -135,8 +139,8 @@ where
 {
     set: &'a SimdBitset<T, N>,
     index: usize,
-    chunk_idx: usize,
-    lane_idx: usize,
+    chunk_iter: slice::Iter<'a, Simd<T, N>>,
+    lane_iter: slice::Iter<'a, T>,
     bit: u32,
     lane: T,
 }
@@ -147,25 +151,18 @@ where
     LaneCount<N>: SupportedLaneCount,
 {
     fn new(set: &'a SimdBitset<T, N>) -> Self {
-        let mut iter = SimdSetIter {
+        let mut chunk_iter = set.chunks.iter();
+        let chunk = chunk_iter.next().unwrap();
+        let mut lane_iter = chunk.as_array().iter();
+        let lane = *lane_iter.next().unwrap();
+
+        SimdSetIter {
             set,
             index: 0,
-            chunk_idx: 0,
-            lane_idx: 0,
+            chunk_iter,
+            lane_iter,
             bit: 0,
-            lane: T::ZERO,
-        };
-        iter.read_lane();
-        iter
-    }
-
-    #[inline(always)]
-    fn read_lane(&mut self) {
-        debug_assert!(self.chunk_idx < self.set.chunks.len());
-        debug_assert!(self.lane_idx < N);
-        unsafe {
-            let chunk = self.set.chunks.get_unchecked(self.chunk_idx);
-            self.lane = *chunk.as_array().get_unchecked(self.lane_idx);
+            lane,
         }
     }
 }
@@ -205,19 +202,19 @@ where
                 self.bit = 0;
 
                 loop {
-                    if self.lane_idx == N - 1 {
-                        self.lane_idx = 0;
-                        if self.chunk_idx == self.set.chunks.len() - 1 {
-                            debug_assert!(self.index >= self.set.nbits);
-                            return (zeros == 0).then_some(idx);
-                        } else {
-                            self.chunk_idx += 1;
+                    match self.lane_iter.next() {
+                        Some(lane) => {
+                            self.lane = *lane;
                         }
-                    } else {
-                        self.lane_idx += 1;
+                        None => match self.chunk_iter.next() {
+                            Some(chunk) => {
+                                self.lane_iter = chunk.as_array().iter();
+                                self.lane = *self.lane_iter.next().unwrap();
+                            }
+                            None => return (zeros == 0).then_some(idx),
+                        },
                     }
 
-                    self.read_lane();
                     if self.lane != T::ZERO {
                         break;
                     } else {
@@ -306,14 +303,18 @@ where
     #[inline]
     fn intersect(&mut self, other: &Self) {
         debug_assert!(other.chunks.len() == self.chunks.len());
-        for i in 0..self.chunks.len() {
-            let (dst_chunk, src_chunk) = unsafe {
-                (
-                    self.chunks.get_unchecked_mut(i),
-                    other.chunks.get_unchecked(i),
-                )
-            };
-            *dst_chunk &= src_chunk;
+
+        let mut dst = self.chunks.as_mut_ptr();
+        let mut src = other.chunks.as_ptr();
+
+        unsafe {
+            let dst_end = dst.add(self.chunks.len());
+
+            while dst != dst_end {
+                *dst &= &*src;
+                dst = dst.add(1);
+                src = src.add(1);
+            }
         }
     }
 
