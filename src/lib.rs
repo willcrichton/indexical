@@ -158,7 +158,7 @@ impl<T: IndexedValue> ToIndex<T, MarkerIndex> for T::Index {
 /// Links a type to its index.
 ///
 /// Should be automatically implemented by the [`define_index_type`] macro.
-pub trait IndexedValue: Clone + PartialEq + Eq + Hash + 'static {
+pub trait IndexedValue: Clone + PartialEq + Eq + Hash {
     /// The index for `Self`.
     type Index: Idx;
 }
@@ -172,7 +172,7 @@ pub trait IndexedValue: Clone + PartialEq + Eq + Hash + 'static {
 macro_rules! define_index_type {
   (
     $(#[$attrs:meta])*
-    $v:vis struct $type:ident for $target:ty = $raw:ident;
+    $v:vis struct $type:ident for $target:ident $(<$($l:lifetime),*>)? = $raw:ident;
     $($CONFIG_NAME:ident = $value:expr;)* $(;)?
   ) => {
     $crate::index_vec::define_index_type! {
@@ -181,8 +181,14 @@ macro_rules! define_index_type {
       $($CONFIG_NAME = $value;)*
     }
 
-    impl $crate::IndexedValue for $target {
+    impl $(<$($l),*>)? $crate::IndexedValue for $target $(<$($l),*>)? {
       type Index = $type;
     }
   }
 }
+
+/// Workaround for GAT lifetime issue.
+///
+/// See: <https://github.com/rust-lang/rust/issues/34511#issuecomment-373423999>
+pub trait Captures<'a> {}
+impl<'a, T: ?Sized> Captures<'a> for T {}

@@ -77,40 +77,40 @@ impl BitSet for RustcBitSet {
 }
 
 /// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation.
-pub type RustcIndexSet<T> = IndexSet<T, RustcBitSet, RcFamily>;
+pub type RustcIndexSet<T> = IndexSet<'static, T, RustcBitSet, RcFamily>;
 
 /// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type RustcArcIndexSet<T> = IndexSet<T, RustcBitSet, ArcFamily>;
+pub type RustcArcIndexSet<T> = IndexSet<'static, T, RustcBitSet, ArcFamily>;
 
 /// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`RefFamily`].
-pub type RustcRefIndexSet<'a, T> = IndexSet<T, RustcBitSet, RefFamily<'a>>;
+pub type RustcRefIndexSet<'a, T> = IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;
 
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation.
-pub type RustcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, RcFamily>;
+pub type RustcIndexMatrix<R, C> = IndexMatrix<'static, R, C, RustcBitSet, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type RustcArcIndexMatrix<R, C> = IndexMatrix<R, C, RustcBitSet, ArcFamily>;
+pub type RustcArcIndexMatrix<R, C> = IndexMatrix<'static, R, C, RustcBitSet, ArcFamily>;
 
 /// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`RefFamily`].
-pub type RustcRefIndexMatrix<'a, R, C> = IndexMatrix<R, C, RustcBitSet, RefFamily<'a>>;
+pub type RustcRefIndexMatrix<'a, R, C> = IndexMatrix<'a, R, C, RustcBitSet, RefFamily<'a>>;
 
-impl<T, S, P> JoinSemiLattice for IndexSet<T, S, P>
+impl<'a, T, S, P> JoinSemiLattice for IndexSet<'a, T, S, P>
 where
-    T: IndexedValue,
+    T: IndexedValue + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
     fn join(&mut self, other: &Self) -> bool {
         self.union_changed(other)
     }
 }
 
-impl<R, C, S, P> JoinSemiLattice for IndexMatrix<R, C, S, P>
+impl<'a, R, C, S, P> JoinSemiLattice for IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone,
-    C: IndexedValue,
+    C: IndexedValue + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
     fn join(&mut self, other: &Self) -> bool {
         let mut changed = false;

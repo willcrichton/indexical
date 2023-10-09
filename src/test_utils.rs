@@ -1,7 +1,7 @@
 use crate::{define_index_type, BitSet};
 
 define_index_type! {
-  pub struct StrIdx for &'static str = u32;
+  pub struct StrIdx for String = u32;
 }
 
 #[cfg(all(feature = "bitvec", not(feature = "rustc")))]

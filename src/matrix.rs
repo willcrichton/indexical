@@ -2,24 +2,24 @@ use fxhash::FxHashMap;
 use splitmut::SplitMut;
 use std::{fmt, hash::Hash};
 
-use crate::{BitSet, IndexSet, IndexedDomain, IndexedValue, PointerFamily, ToIndex};
+use crate::{BitSet, Captures, IndexSet, IndexedDomain, IndexedValue, PointerFamily, ToIndex};
 
 /// An unordered collections of pairs `(R, C)`, implemented with a sparse bit-matrix.
 ///
 /// "Sparse" means "hash map from rows to bit-sets of columns". Subsequently, only column types `C` must be indexed,
 /// while row types `R` only need be hashable.
-pub struct IndexMatrix<R, C: IndexedValue, S: BitSet, P: PointerFamily> {
-    pub(crate) matrix: FxHashMap<R, IndexSet<C, S, P>>,
-    empty_set: IndexSet<C, S, P>,
+pub struct IndexMatrix<'a, R, C: IndexedValue + 'a, S: BitSet, P: PointerFamily<'a>> {
+    pub(crate) matrix: FxHashMap<R, IndexSet<'a, C, S, P>>,
+    empty_set: IndexSet<'a, C, S, P>,
     col_domain: P::Pointer<IndexedDomain<C>>,
 }
 
-impl<R, C, S, P> IndexMatrix<R, C, S, P>
+impl<'a, R, C, S, P> IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone,
-    C: IndexedValue,
+    C: IndexedValue + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
     /// Creates an empty matrix.
     pub fn new(col_domain: &P::Pointer<IndexedDomain<C>>) -> Self {
@@ -30,7 +30,7 @@ where
         }
     }
 
-    pub(crate) fn ensure_row(&mut self, row: R) -> &mut IndexSet<C, S, P> {
+    pub(crate) fn ensure_row(&mut self, row: R) -> &mut IndexSet<'a, C, S, P> {
         self.matrix
             .entry(row)
             .or_insert_with(|| self.empty_set.clone())
@@ -43,7 +43,7 @@ where
     }
 
     /// Adds all elements of `from` into the row `into`.
-    pub fn union_into_row(&mut self, into: R, from: &IndexSet<C, S, P>) -> bool {
+    pub fn union_into_row(&mut self, into: R, from: &IndexSet<'a, C, S, P>) -> bool {
         self.ensure_row(into).union_changed(from)
     }
 
@@ -62,17 +62,17 @@ where
     }
 
     /// Returns an iterator over the elements in `row`.
-    pub fn row(&self, row: &R) -> impl Iterator<Item = &C> + '_ {
+    pub fn row(&self, row: &R) -> impl Iterator<Item = &C> + Captures<'a> + '_ {
         self.matrix.get(row).into_iter().flat_map(|set| set.iter())
     }
 
     /// Returns an iterator over all rows in the matrix.
-    pub fn rows(&self) -> impl Iterator<Item = (&R, &IndexSet<C, S, P>)> + '_ {
+    pub fn rows(&self) -> impl Iterator<Item = (&R, &IndexSet<'a, C, S, P>)> + Captures<'a> + '_ {
         self.matrix.iter()
     }
 
     /// Returns the [`IndexSet`] for a particular `row`.
-    pub fn row_set(&self, row: &R) -> &IndexSet<C, S, P> {
+    pub fn row_set(&self, row: &R) -> &IndexSet<'a, C, S, P> {
         self.matrix.get(row).unwrap_or(&self.empty_set)
     }
 
@@ -87,32 +87,33 @@ where
     }
 }
 
-impl<R, C, S, P> PartialEq for IndexMatrix<R, C, S, P>
+impl<'a, R, C, S, P> PartialEq for IndexMatrix<'a, R, C, S, P>
 where
-    R: PartialEq + Eq + Hash,
-    C: IndexedValue,
+    R: PartialEq + Eq + Hash + Clone,
+    C: IndexedValue + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
     fn eq(&self, other: &Self) -> bool {
         self.matrix == other.matrix
     }
 }
-impl<R, C, S, P> Eq for IndexMatrix<R, C, S, P>
+
+impl<'a, R, C, S, P> Eq for IndexMatrix<'a, R, C, S, P>
 where
-    R: PartialEq + Eq + Hash,
-    C: IndexedValue,
+    R: PartialEq + Eq + Hash + Clone,
+    C: IndexedValue + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
 }
 
-impl<R, C, S, P> Clone for IndexMatrix<R, C, S, P>
+impl<'a, R, C, S, P> Clone for IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone,
-    C: IndexedValue,
+    C: IndexedValue + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
     fn clone(&self) -> Self {
         Self {
@@ -136,12 +137,12 @@ where
     }
 }
 
-impl<R, C, S, P> fmt::Debug for IndexMatrix<R, C, S, P>
+impl<'a, R, C, S, P> fmt::Debug for IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone + fmt::Debug,
-    C: IndexedValue + fmt::Debug,
+    C: IndexedValue + fmt::Debug + 'a,
     S: BitSet,
-    P: PointerFamily,
+    P: PointerFamily<'a>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.rows()).finish()
@@ -153,16 +154,20 @@ mod test {
     use crate::{test_utils::TestIndexMatrix, IndexedDomain};
     use std::rc::Rc;
 
+    fn mk(s: &str) -> String {
+        s.to_string()
+    }
+
     #[test]
     fn test_indexmatrix() {
-        let col_domain = Rc::new(IndexedDomain::from_iter(["a", "b", "c"]));
+        let col_domain = Rc::new(IndexedDomain::from_iter([mk("a"), mk("b"), mk("c")]));
         let mut mtx = TestIndexMatrix::new(&col_domain);
-        mtx.insert(0, "b");
-        mtx.insert(1, "c");
-        assert_eq!(mtx.row(&0).collect::<Vec<_>>(), vec![&"b"]);
-        assert_eq!(mtx.row(&1).collect::<Vec<_>>(), vec![&"c"]);
+        mtx.insert(0, mk("b"));
+        mtx.insert(1, mk("c"));
+        assert_eq!(mtx.row(&0).collect::<Vec<_>>(), vec!["b"]);
+        assert_eq!(mtx.row(&1).collect::<Vec<_>>(), vec!["c"]);
 
         assert!(mtx.union_rows(0, 1));
-        assert_eq!(mtx.row(&1).collect::<Vec<_>>(), vec![&"b", &"c"]);
+        assert_eq!(mtx.row(&1).collect::<Vec<_>>(), vec!["b", "c"]);
     }
 }

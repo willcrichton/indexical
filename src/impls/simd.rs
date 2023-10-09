@@ -1,4 +1,9 @@
-/// Implementation is largely derived from the `bitsvec` crate: <https://github.com/psiace/bitsvec>
+//! A SIMD-accelerated bit-set.
+//!
+//! Implementation is largely derived from the `bitsvec` crate: <https://github.com/psiace/bitsvec>
+//! The main difference is I made a much more efficient iterator that computes the indices
+//! of the 1-bits.
+
 use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
 use std::{
     mem::size_of,
@@ -154,6 +159,7 @@ where
         iter
     }
 
+    #[inline(always)]
     fn read_lane(&mut self) {
         debug_assert!(self.chunk_idx < self.set.chunks.len());
         debug_assert!(self.lane_idx < N);
@@ -235,6 +241,7 @@ where
 {
     type Iter<'a> = SimdSetIter<'a, T, N>;
 
+    #[inline]
     fn empty(nbits: usize) -> Self {
         let n_chunks = (nbits + Self::chunk_size() - 1) / Self::chunk_size();
         SimdBitset {
@@ -243,6 +250,7 @@ where
         }
     }
 
+    #[inline]
     fn insert(&mut self, index: usize) -> bool {
         let (chunk_idx, lane_idx, bit) = self.coords(index);
 
@@ -259,15 +267,18 @@ where
         true
     }
 
+    #[inline]
     fn contains(&self, index: usize) -> bool {
         let (chunk_idx, lane_idx, bit) = self.coords(index);
         self.get(chunk_idx, lane_idx, bit)
     }
 
+    #[inline]
     fn iter(&self) -> Self::Iter<'_> {
         SimdSetIter::new(self)
     }
 
+    #[inline]
     fn len(&self) -> usize {
         let mut n = 0;
         for chunk in &self.chunks {
@@ -278,24 +289,42 @@ where
         n as usize
     }
 
+    #[inline]
     fn union(&mut self, other: &Self) {
-        for (dst_chunk, src_chunk) in self.chunks.iter_mut().zip(&other.chunks) {
+        debug_assert!(other.chunks.len() == self.chunks.len());
+        for i in 0..self.chunks.len() {
+            let (dst_chunk, src_chunk) = unsafe {
+                (
+                    self.chunks.get_unchecked_mut(i),
+                    other.chunks.get_unchecked(i),
+                )
+            };
             *dst_chunk |= src_chunk;
         }
     }
 
+    #[inline]
     fn intersect(&mut self, other: &Self) {
-        for (dst_chunk, src_chunk) in self.chunks.iter_mut().zip(&other.chunks) {
+        debug_assert!(other.chunks.len() == self.chunks.len());
+        for i in 0..self.chunks.len() {
+            let (dst_chunk, src_chunk) = unsafe {
+                (
+                    self.chunks.get_unchecked_mut(i),
+                    other.chunks.get_unchecked(i),
+                )
+            };
             *dst_chunk &= src_chunk;
         }
     }
 
+    #[inline]
     fn subtract(&mut self, other: &Self) {
         let mut other = other.clone();
         other.invert();
         self.intersect(&other);
     }
 
+    #[inline]
     fn invert(&mut self) {
         for chunk in self.chunks.iter_mut() {
             for lane in chunk.as_mut_array() {
@@ -304,6 +333,7 @@ where
         }
     }
 
+    #[inline]
     fn clear(&mut self) {
         for chunk in self.chunks.iter_mut() {
             for lane in chunk.as_mut_array() {
@@ -312,6 +342,7 @@ where
         }
     }
 
+    #[inline]
     fn insert_all(&mut self) {
         for chunk in self.chunks.iter_mut() {
             for lane in chunk.as_mut_array() {
@@ -320,6 +351,7 @@ where
         }
     }
 
+    #[inline(always)]
     fn copy_from(&mut self, other: &Self) {
         for (dst_chunk, src_chunk) in self.chunks.iter_mut().zip(&other.chunks) {
             *dst_chunk = *src_chunk;
@@ -328,22 +360,22 @@ where
 }
 
 /// [`IndexSet`] specialized to the [`SimdBitset`] implementation.
-pub type SimdIndexSet<T> = IndexSet<T, SimdBitset<u64, 4>, RcFamily>;
+pub type SimdIndexSet<T> = IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
 
 /// [`IndexSet`] specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type SimdArcIndexSet<T> = IndexSet<T, SimdBitset<u64, 4>, ArcFamily>;
+pub type SimdArcIndexSet<T> = IndexSet<'static, T, SimdBitset<u64, 4>, ArcFamily>;
 
 /// [`IndexSet`] specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
-pub type SimdRefIndexSet<'a, T> = IndexSet<T, SimdBitset<u64, 4>, RefFamily<'a>>;
+pub type SimdRefIndexSet<'a, T> = IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;
 
 /// [`IndexMatrix`] specialized to the [`SimdBitset`] implementation.
-pub type SimdIndexMatrix<R, C> = IndexMatrix<R, C, SimdBitset<u64, 4>, RcFamily>;
+pub type SimdIndexMatrix<R, C> = IndexMatrix<'static, R, C, SimdBitset<u64, 4>, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type SimdArcIndexMatrix<R, C> = IndexMatrix<R, C, SimdBitset<u64, 4>, ArcFamily>;
+pub type SimdArcIndexMatrix<R, C> = IndexMatrix<'static, R, C, SimdBitset<u64, 4>, ArcFamily>;
 
 /// [`IndexMatrix`] specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
-pub type SimdRefIndexMatrix<'a, R, C> = IndexMatrix<R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
+pub type SimdRefIndexMatrix<'a, R, C> = IndexMatrix<'a, R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
 
 #[test]
 fn test_simd_bitset() {

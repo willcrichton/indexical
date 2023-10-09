@@ -61,22 +61,22 @@ impl BitSet for BitVec {
 }
 
 /// [`IndexSet`] specialized to the [`BitVec`] implementation.
-pub type BitvecIndexSet<T> = IndexSet<T, BitVec, RcFamily>;
+pub type BitvecIndexSet<T> = IndexSet<'static, T, BitVec, RcFamily>;
 
 /// [`IndexSet`] specialized to the [`BitVec`] implementation with the [`ArcFamily`].
-pub type BitvecArcIndexSet<T> = IndexSet<T, BitVec, ArcFamily>;
+pub type BitvecArcIndexSet<'a, T> = IndexSet<'a, T, BitVec, ArcFamily>;
 
 /// [`IndexSet`] specialized to the [`BitVec`] implementation with the [`RefFamily`].
-pub type BitvecRefIndexSet<'a, T> = IndexSet<T, BitVec, RefFamily<'a>>;
+pub type BitvecRefIndexSet<'a, T> = IndexSet<'a, T, BitVec, RefFamily<'a>>;
 
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation.
-pub type BitvecIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, RcFamily>;
+pub type BitvecIndexMatrix<R, C> = IndexMatrix<'static, R, C, BitVec, RcFamily>;
 
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation with the [`ArcFamily`].
-pub type BitvecArcIndexMatrix<R, C> = IndexMatrix<R, C, BitVec, ArcFamily>;
+pub type BitvecArcIndexMatrix<R, C> = IndexMatrix<'static, R, C, BitVec, ArcFamily>;
 
 /// [`IndexMatrix`] specialized to the [`BitVec`] implementation with the [`RefFamily`].
-pub type BitvecRefIndexMatrix<'a, R, C> = IndexMatrix<R, C, BitVec, RefFamily<'a>>;
+pub type BitvecRefIndexMatrix<'a, R, C> = IndexMatrix<'a, R, C, BitVec, RefFamily<'a>>;
 
 #[test]
 fn test_bitvec() {
