@@ -1,6 +1,6 @@
 [package]
 name = "indexical"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 description = "Utilities for indexed collections"
 authors = [
@@ -21,7 +21,7 @@ simd = []
 roaring = ["dep:roaring"]
 roaring-simd = ["roaring", "roaring/simd"]
 bitvec = ["dep:bitvec", "dep:take_mut"]
-default = ["bitvec", "roaring"]
+default = ["bitvec"]
 
 [dependencies]
 bitvec = { version = "1.0.1", optional = true }

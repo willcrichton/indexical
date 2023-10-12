@@ -112,13 +112,14 @@ where
         size_of::<T>() * 8
     }
 
-    #[inline]
-    fn coords(&self, index: usize) -> (usize, usize, u32) {
+    #[inline(always)]
+    const fn coords(&self, index: usize) -> (usize, usize, u32) {
         let (chunk, index) = (index / Self::chunk_size(), index % Self::chunk_size());
         let (lane, index) = (index / Self::lane_size(), index % Self::lane_size());
         (chunk, lane, index as u32)
     }
 
+    #[inline(always)]
     fn get(&self, chunk_idx: usize, lane_idx: usize, bit: u32) -> bool {
         debug_assert!(chunk_idx < self.chunks.len());
         debug_assert!(lane_idx < N);
@@ -128,6 +129,24 @@ where
             let chunk = self.chunks.get_unchecked(chunk_idx);
             let lane = chunk.as_array().get_unchecked(lane_idx);
             lane.unchecked_shr(bit) & T::ONE == T::ONE
+        }
+    }
+
+    #[inline(always)]
+    fn zip_mut(&mut self, other: &Self, mut op: impl FnMut(&mut Simd<T, N>, &Simd<T, N>)) {
+        debug_assert!(other.chunks.len() == self.chunks.len());
+
+        let mut dst = self.chunks.as_mut_ptr();
+        let mut src = other.chunks.as_ptr();
+
+        unsafe {
+            let dst_end = dst.add(self.chunks.len());
+
+            while dst != dst_end {
+                op(&mut *dst, &*src);
+                dst = dst.add(1);
+                src = src.add(1);
+            }
         }
     }
 }
@@ -150,6 +169,7 @@ where
     T: SimdSetElement,
     LaneCount<N>: SupportedLaneCount,
 {
+    #[inline]
     fn new(set: &'a SimdBitset<T, N>) -> Self {
         let mut chunk_iter = set.chunks.iter();
         let chunk = chunk_iter.next().unwrap();
@@ -288,34 +308,12 @@ where
 
     #[inline]
     fn union(&mut self, other: &Self) {
-        debug_assert!(other.chunks.len() == self.chunks.len());
-        for i in 0..self.chunks.len() {
-            let (dst_chunk, src_chunk) = unsafe {
-                (
-                    self.chunks.get_unchecked_mut(i),
-                    other.chunks.get_unchecked(i),
-                )
-            };
-            *dst_chunk |= src_chunk;
-        }
+        self.zip_mut(other, |dst, src| *dst |= src);
     }
 
     #[inline]
     fn intersect(&mut self, other: &Self) {
-        debug_assert!(other.chunks.len() == self.chunks.len());
-
-        let mut dst = self.chunks.as_mut_ptr();
-        let mut src = other.chunks.as_ptr();
-
-        unsafe {
-            let dst_end = dst.add(self.chunks.len());
-
-            while dst != dst_end {
-                *dst &= &*src;
-                dst = dst.add(1);
-                src = src.add(1);
-            }
-        }
+        self.zip_mut(other, |dst, src| *dst &= src);
     }
 
     #[inline]
@@ -352,11 +350,9 @@ where
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn copy_from(&mut self, other: &Self) {
-        for (dst_chunk, src_chunk) in self.chunks.iter_mut().zip(&other.chunks) {
-            *dst_chunk = *src_chunk;
-        }
+        self.zip_mut(other, |dst, src| *dst = *src);
     }
 }
 
