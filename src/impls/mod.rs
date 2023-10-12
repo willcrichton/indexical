@@ -3,20 +3,12 @@
 #[cfg(feature = "bitvec")]
 mod bv;
 #[cfg(feature = "bitvec")]
-pub use bv::{
-    bitvec::{self, vec::BitVec},
-    BitvecArcIndexMatrix, BitvecArcIndexSet, BitvecIndexMatrix, BitvecIndexSet,
-    BitvecRefIndexMatrix, BitvecRefIndexSet,
-};
+pub use bv::*;
 
 #[cfg(feature = "rustc")]
 mod rustc;
 #[cfg(feature = "rustc")]
-pub use rustc::{
-    rustc_index::bit_set::{self, BitSet},
-    RustcArcIndexMatrix, RustcArcIndexSet, RustcIndexMatrix, RustcIndexSet, RustcRefIndexMatrix,
-    RustcRefIndexSet,
-};
+pub use rustc::*;
 
 #[cfg(feature = "simd")]
 mod simd;
@@ -25,3 +17,8 @@ pub use simd::{
     SimdArcIndexMatrix, SimdArcIndexSet, SimdBitset, SimdIndexMatrix, SimdIndexSet,
     SimdRefIndexMatrix, SimdRefIndexSet, SimdSetElement,
 };
+
+#[cfg(feature = "roaring")]
+mod roar;
+#[cfg(feature = "roaring")]
+pub use roar::*;

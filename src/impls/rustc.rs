@@ -8,10 +8,13 @@ use crate::{
 use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;
 
-pub type RustcBitSet = rustc_index::bit_set::BitSet<usize>;
+pub use rustc_index::bit_set;
+
+/// A bitset specialized to `usize` indices.
+pub type RustcBitSet = bit_set::BitSet<usize>;
 
 impl BitSet for RustcBitSet {
-    type Iter<'a> = rustc_index::bit_set::BitIter<'a, usize>;
+    type Iter<'a> = bit_set::BitIter<'a, usize>;
 
     fn empty(size: usize) -> Self {
         RustcBitSet::new_empty(size)

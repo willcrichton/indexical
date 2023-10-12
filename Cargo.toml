@@ -12,11 +12,16 @@ repository = "https://github.com/willcrichton/indexical"
 [package.metadata.rust-analyzer]
 rustc_private = true
 
+[package.metadata.docs.rs]
+features = ["roaring"]
+
 [features]
 rustc = []
 simd = []
+roaring = ["dep:roaring"]
+roaring-simd = ["roaring", "roaring/simd"]
 bitvec = ["dep:bitvec", "dep:take_mut"]
-default = ["bitvec"]
+default = ["bitvec", "roaring"]
 
 [dependencies]
 bitvec = { version = "1.0.1", optional = true }
@@ -24,3 +29,4 @@ take_mut = { version = "0.2.2", optional = true }
 fxhash = "0.2.1"
 index_vec = "0.1.3"
 splitmut = "0.2.1"
+roaring = { version = "0.10.2", optional = true }

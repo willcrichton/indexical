@@ -48,4 +48,13 @@ pub fn impl_test<T: BitSet>() {
     bv2.insert(0);
     bv.subtract(&bv2);
     assert_eq!(bv.iter().collect::<Vec<_>>(), vec![1]);
+
+    bv.invert();
+    assert_eq!(
+        bv.iter().collect::<Vec<_>>(),
+        vec![0, 2, 3, 4, 5, 6, 7, 8, 9]
+    );
+
+    bv.clear();
+    assert_eq!(bv.iter().collect::<Vec<_>>(), Vec::<usize>::new());
 }
