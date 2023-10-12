@@ -23,7 +23,7 @@ where
             domain: domain.clone(),
         }
     }
-    
+
     /// Returns an iterator over all the indices contained in `self`.
     #[inline]
     pub fn indices(&self) -> impl Iterator<Item = T::Index> + '_ {
