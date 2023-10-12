@@ -23,14 +23,7 @@ where
             domain: domain.clone(),
         }
     }
-}
-
-impl<'a, T, S, P> IndexSet<'a, T, S, P>
-where
-    T: IndexedValue + 'a,
-    S: BitSet,
-    P: PointerFamily<'a>,
-{
+    
     /// Returns an iterator over all the indices contained in `self`.
     #[inline]
     pub fn indices(&self) -> impl Iterator<Item = T::Index> + '_ {
