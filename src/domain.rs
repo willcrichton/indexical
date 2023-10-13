@@ -4,7 +4,7 @@ use std::fmt;
 
 use crate::IndexedValue;
 
-/// An indexed collection of objects, implemented with an [`IndexVec`].
+/// An indexed collection of objects.
 ///
 /// Contains a reverse-mapping from `T` to `T::Index` for efficient lookups of indices.
 pub struct IndexedDomain<T: IndexedValue> {

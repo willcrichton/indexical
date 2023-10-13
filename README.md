@@ -40,5 +40,3 @@ set.insert(MyString(String::from("Hello")));
 set.insert(StringIndex::from_usize(1));
 assert!(set.contains(MyString(String::from("world"))));
 ```
-
-For further details, see: <https://docs.rs/indexical>
