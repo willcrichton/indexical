@@ -1,6 +1,10 @@
 use bitvec::{prelude::Lsb0, slice::IterOnes};
 
-use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
+use crate::{
+    bitsets::BitSet,
+    pointer::{ArcFamily, RcFamily, RefFamily},
+    IndexMatrix, IndexSet,
+};
 
 pub use bitvec::{self, vec::BitVec};
 

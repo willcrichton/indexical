@@ -2,7 +2,10 @@ use std::fmt;
 
 use index_vec::Idx;
 
-use crate::{BitSet, Captures, IndexedDomain, IndexedValue, PointerFamily, ToIndex};
+use crate::{
+    bitsets::BitSet, pointer::PointerFamily, Captures, FromIndexicalIterator, IndexedDomain,
+    IndexedValue, ToIndex,
+};
 
 /// An unordered collections of `T`s, implemented with a bit-set.
 pub struct IndexSet<'a, T: IndexedValue + 'a, S: BitSet, P: PointerFamily<'a>> {
@@ -178,25 +181,19 @@ where
     }
 }
 
-/// Extension trait for iterators producing index sets.
-pub trait IndexSetIteratorExt<'a, T: IndexedValue + 'a, S: BitSet, P: PointerFamily<'a>, M> {
-    /// Creates an [`IndexSet`] from an iterator over `T`s.
-    ///
-    /// We cannot just use the normal `collect` method because this requires the domain as input.
-    fn collect_indices(self, domain: &P::Pointer<IndexedDomain<T>>) -> IndexSet<'a, T, S, P>;
-}
-
-impl<'a, T, U, S, M, P, Iter> IndexSetIteratorExt<'a, T, S, P, M> for Iter
+impl<'a, T, U, S, M, P> FromIndexicalIterator<'a, T, P, M, U> for IndexSet<'a, T, S, P>
 where
     T: IndexedValue + 'a,
     S: BitSet,
     P: PointerFamily<'a>,
-    Iter: Iterator<Item = U>,
     U: ToIndex<T, M>,
 {
-    fn collect_indices(self, domain: &P::Pointer<IndexedDomain<T>>) -> IndexSet<'a, T, S, P> {
+    fn from_indexical_iter(
+        iter: impl Iterator<Item = U>,
+        domain: &P::Pointer<IndexedDomain<T>>,
+    ) -> Self {
         let mut set = IndexSet::new(domain);
-        for s in self {
+        for s in iter {
             set.insert(s);
         }
         set
@@ -205,7 +202,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::{set::IndexSetIteratorExt, test_utils::TestIndexSet, IndexedDomain};
+    use crate::{test_utils::TestIndexSet, IndexedDomain, IndexicalIteratorExt};
     use std::rc::Rc;
 
     fn mk(s: &str) -> String {
@@ -223,7 +220,12 @@ mod test {
         assert!(s.contains(mk("b")));
         assert_eq!(s.len(), 2);
 
-        assert_eq!([mk("a"), mk("b")].into_iter().collect_indices(&d), s);
+        assert_eq!(
+            [mk("a"), mk("b")]
+                .into_iter()
+                .collect_indexical::<TestIndexSet<_>>(&d),
+            s
+        );
         assert_eq!(format!("{s:?}"), r#"{"a", "b"}"#)
     }
 
@@ -231,7 +233,7 @@ mod test {
     #[test]
     fn test_indexset_reffamily() {
         let d = &IndexedDomain::from_iter([mk("a"), mk("b"), mk("c")]);
-        let mut s = crate::impls::BitvecRefIndexSet::new(&d);
+        let mut s = crate::bitsets::BitvecRefIndexSet::new(&d);
         s.insert(mk("a"));
         assert!(s.contains(mk("a")));
 

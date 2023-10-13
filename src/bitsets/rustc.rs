@@ -3,7 +3,9 @@ pub extern crate rustc_index;
 extern crate rustc_mir_dataflow;
 
 use crate::{
-    ArcFamily, BitSet, IndexMatrix, IndexSet, IndexedValue, PointerFamily, RcFamily, RefFamily,
+    bitsets::BitSet,
+    pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
+    IndexMatrix, IndexSet, IndexedValue,
 };
 use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;

@@ -1,6 +1,10 @@
 pub use roaring::RoaringBitmap;
 
-use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
+use crate::{
+    bitsets::BitSet,
+    pointer::{ArcFamily, RcFamily, RefFamily},
+    IndexMatrix, IndexSet,
+};
 
 /// Wrapper around a [`RoaringBitmap`] that includes the domain size.
 #[derive(PartialEq, Clone)]

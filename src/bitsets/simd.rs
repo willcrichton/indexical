@@ -7,7 +7,11 @@
 //! **WARNING:** this module makes liberal use of unsafe code and has not been thoroughly vetted,
 //! so use it at your own risk.
 
-use crate::{ArcFamily, BitSet, IndexMatrix, IndexSet, RcFamily, RefFamily};
+use crate::{
+    bitsets::BitSet,
+    pointer::{ArcFamily, RcFamily, RefFamily},
+    IndexMatrix, IndexSet,
+};
 use std::{
     mem::size_of,
     ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not},

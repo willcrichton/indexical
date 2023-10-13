@@ -1,9 +1,11 @@
+//! Abstraction over smart pointers.
+
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::rc::Rc;
 use std::sync::Arc;
 
-/// Abstraction over smart pointers with `'static` interiors.
+/// Abstraction over smart pointers.
 ///
 /// Used so to make the indexical data structures generic with respect
 /// to choice of `Rc` or `Arc` (or your own clonable smart pointer!).

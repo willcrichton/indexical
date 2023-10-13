@@ -2,7 +2,10 @@ use fxhash::FxHashMap;
 use splitmut::SplitMut;
 use std::{fmt, hash::Hash};
 
-use crate::{BitSet, Captures, IndexSet, IndexedDomain, IndexedValue, PointerFamily, ToIndex};
+use crate::{
+    bitsets::BitSet, pointer::PointerFamily, Captures, IndexSet, IndexedDomain, IndexedValue,
+    ToIndex,
+};
 
 /// An unordered collections of pairs `(R, C)`, implemented with a sparse bit-matrix.
 ///

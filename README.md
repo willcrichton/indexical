@@ -14,7 +14,7 @@ Indexical provides utilities for converting between the object domain and the in
 ```rust
 use indexical::{
     IndexedDomain, IndexedValue, define_index_type,
-    impls::BitvecIndexSet as IndexSet
+    bitsets::BitvecIndexSet as IndexSet
 };
 use std::rc::Rc;
 
