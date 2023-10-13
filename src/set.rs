@@ -3,7 +3,7 @@ use std::fmt;
 use index_vec::Idx;
 
 use crate::{
-    bitsets::BitSet, pointer::PointerFamily, Captures, FromIndexicalIterator, IndexedDomain,
+    bitset::BitSet, pointer::PointerFamily, Captures, FromIndexicalIterator, IndexedDomain,
     IndexedValue, ToIndex,
 };
 
@@ -233,7 +233,7 @@ mod test {
     #[test]
     fn test_indexset_reffamily() {
         let d = &IndexedDomain::from_iter([mk("a"), mk("b"), mk("c")]);
-        let mut s = crate::bitsets::BitvecRefIndexSet::new(&d);
+        let mut s = crate::bitset::bitvec::RefIndexSet::new(&d);
         s.insert(mk("a"));
         assert!(s.contains(mk("a")));
 

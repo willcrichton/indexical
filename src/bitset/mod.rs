@@ -87,24 +87,13 @@ pub trait BitSet: Clone + PartialEq {
 }
 
 #[cfg(feature = "bitvec")]
-mod bv;
-#[cfg(feature = "bitvec")]
-pub use bv::*;
+pub mod bitvec;
 
 #[cfg(feature = "rustc")]
-mod rustc;
-#[cfg(feature = "rustc")]
-pub use rustc::*;
+pub mod rustc;
 
 #[cfg(feature = "simd")]
-mod simd;
-#[cfg(feature = "simd")]
-pub use simd::{
-    SimdArcIndexMatrix, SimdArcIndexSet, SimdBitset, SimdIndexMatrix, SimdIndexSet,
-    SimdRefIndexMatrix, SimdRefIndexSet, SimdSetElement,
-};
+pub mod simd;
 
 #[cfg(feature = "roaring")]
-mod roar;
-#[cfg(feature = "roaring")]
-pub use roar::*;
+pub mod roaring;

@@ -4,8 +4,8 @@
 //! across all Indexical types. All types can then use the [`IndexedDomain`] to convert between indexes and objects, usually via the [`ToIndex`] trait.
 //!
 //! [`IndexSet`] and [`IndexMatrix`] are generic with respect to two things:
-//! 1. **The choice of bit-set implementation.** By default, Indexical includes the [`bitvec`] crate and provides the [`bitsets::BitvecIndexSet`] type.
-//!    You can provide your own bit-set implementation via the [`bitsets::cargo BitSet`] trait.
+//! 1. **The choice of bit-set implementation.** By default, Indexical includes the [`bitvec`] crate and provides the [`bitset::bitvec::IndexSet`] type.
+//!    You can provide your own bit-set implementation via the [`bitset::BitSet`] trait.
 //! 2. **The choice of domain pointer.** By default, Indexical uses the [`Rc`](std::rc::Rc) pointer via the [`RcFamily`](pointer::RcFamily) type.
 //!    You can choose to use the [`ArcFamily`](pointer::ArcFamily) if you need concurrency, or the [`RefFamily`](pointer::RefFamily) if you want to avoid reference-counting.
 
@@ -18,7 +18,7 @@ use self::pointer::PointerFamily;
 use index_vec::Idx;
 use std::hash::Hash;
 
-pub mod bitsets;
+pub mod bitset;
 mod domain;
 pub mod map;
 mod matrix;

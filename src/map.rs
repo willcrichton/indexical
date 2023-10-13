@@ -145,6 +145,7 @@ where
     P: PointerFamily<'a>,
 {
     /// Constructs a new map with an initial element of `mk_elem(i)` for each `i` in `domain`.
+    #[inline]
     pub fn new(domain: &P::Pointer<IndexedDomain<K>>, mk_elem: impl FnMut(K::Index) -> V) -> Self {
         DenseIndexMap {
             map: IndexVec::from_iter(domain.indices().map(mk_elem)),
@@ -153,12 +154,14 @@ where
     }
 
     /// Returns an immutable reference to a value for a given key if it exists.
+    #[inline]
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> Option<&V> {
         let idx = idx.to_index(&self.domain);
         self.map.get(idx)
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
+    #[inline]
     pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> Option<&mut V> {
         let idx = idx.to_index(&self.domain);
         self.map.get_mut(idx)
@@ -168,6 +171,7 @@ where
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
+    #[inline]
     pub unsafe fn get_unchecked<M>(&self, idx: impl ToIndex<K, M>) -> &V {
         let idx = idx.to_index(&self.domain);
         self.map.raw.get_unchecked(idx.index())
@@ -177,18 +181,21 @@ where
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
+    #[inline]
     pub unsafe fn get_unchecked_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
         let idx = idx.to_index(&self.domain);
         self.map.raw.get_unchecked_mut(idx.index())
     }
 
     /// Inserts the key/value pair into `self`.
+    #[inline]
     pub fn insert<M>(&mut self, idx: impl ToIndex<K, M>, value: V) {
         let idx = idx.to_index(&self.domain);
-        self.map.insert(idx, value);
+        self.map[idx] = value;
     }
 
     /// Returns an iterator over the values of the map.
+    #[inline]
     pub fn values(&self) -> impl Iterator<Item = &V> + '_ {
         self.map.iter()
     }
@@ -201,6 +208,7 @@ where
 {
     type Output = V;
 
+    #[inline]
     fn index(&self, index: K::Index) -> &Self::Output {
         self.get(index).unwrap()
     }
@@ -211,6 +219,7 @@ where
     K: IndexedValue + 'a,
     P: PointerFamily<'a>,
 {
+    #[inline]
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index).unwrap()
     }

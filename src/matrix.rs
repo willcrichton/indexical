@@ -3,7 +3,7 @@ use splitmut::SplitMut;
 use std::{fmt, hash::Hash};
 
 use crate::{
-    bitsets::BitSet, pointer::PointerFamily, Captures, IndexSet, IndexedDomain, IndexedValue,
+    bitset::BitSet, pointer::PointerFamily, Captures, IndexSet, IndexedDomain, IndexedValue,
     ToIndex,
 };
 

@@ -1,9 +1,13 @@
-pub use roaring::RoaringBitmap;
+//! A bit-set based on [`RoaringBitmap`].
+//!
+//! If you want roaring's SIMD support, add `roaring-simd` to
+//! your indexical feature list.
+
+pub use roaring::{self, RoaringBitmap};
 
 use crate::{
-    bitsets::BitSet,
+    bitset::BitSet,
     pointer::{ArcFamily, RcFamily, RefFamily},
-    IndexMatrix, IndexSet,
 };
 
 /// Wrapper around a [`RoaringBitmap`] that includes the domain size.
@@ -78,23 +82,23 @@ impl BitSet for RoaringSet {
     }
 }
 
-/// [`IndexSet`] specialized to the [`RoaringBitmap`] implementation.
-pub type RoaringIndexSet<T> = IndexSet<'static, T, RoaringSet, RcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation.
+pub type IndexSet<T> = crate::IndexSet<'static, T, RoaringSet, RcFamily>;
 
-/// [`IndexSet`] specialized to the [`RoaringBitmap`] implementation with the [`ArcFamily`].
-pub type RoaringArcIndexSet<'a, T> = IndexSet<'a, T, RoaringSet, ArcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`ArcFamily`].
+pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, RoaringSet, ArcFamily>;
 
-/// [`IndexSet`] specialized to the [`RoaringBitmap`] implementation with the [`RefFamily`].
-pub type RoaringRefIndexSet<'a, T> = IndexSet<'a, T, RoaringSet, RefFamily<'a>>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`RefFamily`].
+pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, RoaringSet, RefFamily<'a>>;
 
-/// [`IndexMatrix`] specialized to the [`RoaringBitmap`] implementation.
-pub type RoaringIndexMatrix<R, C> = IndexMatrix<'static, R, C, RoaringSet, RcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation.
+pub type IndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RoaringSet, RcFamily>;
 
-/// [`IndexMatrix`] specialized to the [`RoaringBitmap`] implementation with the [`ArcFamily`].
-pub type RoaringArcIndexMatrix<R, C> = IndexMatrix<'static, R, C, RoaringSet, ArcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation with the [`ArcFamily`].
+pub type ArcIndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RoaringSet, ArcFamily>;
 
-/// [`IndexMatrix`] specialized to the [`RoaringBitmap`] implementation with the [`RefFamily`].
-pub type RoaringRefIndexMatrix<'a, R, C> = IndexMatrix<'a, R, C, RoaringSet, RefFamily<'a>>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation with the [`RefFamily`].
+pub type RefIndexMatrix<'a, R, C> = crate::IndexMatrix<'a, R, C, RoaringSet, RefFamily<'a>>;
 
 #[test]
 fn test_roaring() {

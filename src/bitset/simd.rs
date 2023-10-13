@@ -1,6 +1,7 @@
-//! A SIMD-accelerated bit-set.
+//! A custom SIMD-accelerated bit-set.
 //!
 //! Implementation is largely derived from the `bitsvec` crate: <https://github.com/psiace/bitsvec>
+//!
 //! The main difference is I made a much more efficient iterator that computes the indices
 //! of the 1-bits.
 //!
@@ -8,9 +9,8 @@
 //! so use it at your own risk.
 
 use crate::{
-    bitsets::BitSet,
+    bitset::BitSet,
     pointer::{ArcFamily, RcFamily, RefFamily},
-    IndexMatrix, IndexSet,
 };
 use std::{
     mem::size_of,
@@ -155,6 +155,7 @@ where
     }
 }
 
+/// Iterator over the 1-bits of a [`SimdBitset`].
 pub struct SimdSetIter<'a, T, const N: usize>
 where
     T: SimdSetElement,
@@ -360,23 +361,23 @@ where
     }
 }
 
-/// [`IndexSet`] specialized to the [`SimdBitset`] implementation.
-pub type SimdIndexSet<T> = IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation.
+pub type IndexSet<T> = crate::IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
 
-/// [`IndexSet`] specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type SimdArcIndexSet<T> = IndexSet<'static, T, SimdBitset<u64, 4>, ArcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
+pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, SimdBitset<u64, 4>, ArcFamily>;
 
-/// [`IndexSet`] specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
-pub type SimdRefIndexSet<'a, T> = IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
+pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;
 
-/// [`IndexMatrix`] specialized to the [`SimdBitset`] implementation.
-pub type SimdIndexMatrix<R, C> = IndexMatrix<'static, R, C, SimdBitset<u64, 4>, RcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation.
+pub type IndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, RcFamily>;
 
-/// [`IndexMatrix`] specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type SimdArcIndexMatrix<R, C> = IndexMatrix<'static, R, C, SimdBitset<u64, 4>, ArcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
+pub type ArcIndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, ArcFamily>;
 
-/// [`IndexMatrix`] specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
-pub type SimdRefIndexMatrix<'a, R, C> = IndexMatrix<'a, R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
+pub type RefIndexMatrix<'a, R, C> = crate::IndexMatrix<'a, R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
 
 #[test]
 fn test_simd_bitset() {

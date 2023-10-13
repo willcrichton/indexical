@@ -1,11 +1,13 @@
+//! The Rust compiler's [`BitSet`](https://doc.rust-lang.org/beta/nightly-rustc/rustc_index/bit_set/struct.BitSet.html).
+
 extern crate rustc_driver;
 pub extern crate rustc_index;
 extern crate rustc_mir_dataflow;
 
 use crate::{
-    bitsets::BitSet,
+    bitset::BitSet,
     pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
-    IndexMatrix, IndexSet, IndexedValue,
+    IndexedValue,
 };
 use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;
@@ -81,25 +83,25 @@ impl BitSet for RustcBitSet {
     }
 }
 
-/// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation.
-pub type RustcIndexSet<T> = IndexSet<'static, T, RustcBitSet, RcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation.
+pub type IndexSet<T> = crate::IndexSet<'static, T, RustcBitSet, RcFamily>;
 
-/// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type RustcArcIndexSet<T> = IndexSet<'static, T, RustcBitSet, ArcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
+pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, RustcBitSet, ArcFamily>;
 
-/// [`IndexSet`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`RefFamily`].
-pub type RustcRefIndexSet<'a, T> = IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;
+/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
+pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;
 
-/// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation.
-pub type RustcIndexMatrix<R, C> = IndexMatrix<'static, R, C, RustcBitSet, RcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation.
+pub type IndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RustcBitSet, RcFamily>;
 
-/// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type RustcArcIndexMatrix<R, C> = IndexMatrix<'static, R, C, RustcBitSet, ArcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
+pub type ArcIndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RustcBitSet, ArcFamily>;
 
-/// [`IndexMatrix`] specialized to the `rustc_index::bit_set::BitSet` implementation with the [`RefFamily`].
-pub type RustcRefIndexMatrix<'a, R, C> = IndexMatrix<'a, R, C, RustcBitSet, RefFamily<'a>>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
+pub type RefIndexMatrix<'a, R, C> = crate::IndexMatrix<'a, R, C, RustcBitSet, RefFamily<'a>>;
 
-impl<'a, T, S, P> JoinSemiLattice for IndexSet<'a, T, S, P>
+impl<'a, T, S, P> JoinSemiLattice for crate::IndexSet<'a, T, S, P>
 where
     T: IndexedValue + 'a,
     S: BitSet,
@@ -110,7 +112,7 @@ where
     }
 }
 
-impl<'a, R, C, S, P> JoinSemiLattice for IndexMatrix<'a, R, C, S, P>
+impl<'a, R, C, S, P> JoinSemiLattice for crate::IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone,
     C: IndexedValue + 'a,

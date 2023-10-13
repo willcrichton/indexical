@@ -1,6 +1,6 @@
 [package]
 name = "indexical"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 description = "Utilities for indexed collections"
 authors = [
@@ -13,7 +13,8 @@ repository = "https://github.com/willcrichton/indexical"
 rustc_private = true
 
 [package.metadata.docs.rs]
-features = ["roaring"]
+features = ["roaring", "simd"]
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 rustc = []

@@ -1,18 +1,11 @@
-use crate::{bitsets::BitSet, define_index_type};
+use crate::{bitset::BitSet, define_index_type};
 
 define_index_type! {
   pub struct StrIdx for String = u32;
 }
 
-#[cfg(all(feature = "bitvec", not(feature = "rustc")))]
-pub type TestIndexSet<T> = crate::bitsets::BitvecIndexSet<T>;
-#[cfg(all(feature = "bitvec", not(feature = "rustc")))]
-pub type TestIndexMatrix<R, C> = crate::bitsets::BitvecIndexMatrix<R, C>;
-
-#[cfg(feature = "rustc")]
-pub type TestIndexSet<T> = crate::bitsets::RustcIndexSet<T>;
-#[cfg(feature = "rustc")]
-pub type TestIndexMatrix<R, C> = crate::bitsets::RustcIndexMatrix<R, C>;
+pub type TestIndexSet<T> = crate::bitset::bitvec::IndexSet<T>;
+pub type TestIndexMatrix<R, C> = crate::bitset::bitvec::IndexMatrix<R, C>;
 
 pub fn impl_test<T: BitSet>() {
     let mut bv = T::empty(10);
