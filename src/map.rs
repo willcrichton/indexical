@@ -5,12 +5,12 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use fxhash::FxHashMap;
+use ahash::AHashMap;
 use index_vec::{Idx, IndexVec};
 
 use crate::{
     pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
-    IndexedDomain, IndexedValue, ToIndex,
+    FromIndexicalIterator, IndexedDomain, IndexedValue, ToIndex,
 };
 
 /// A mapping from indexed keys to values, implemented sparsely with a hash map.
@@ -18,7 +18,7 @@ use crate::{
 /// This is more memory-efficient than the [`DenseIndexMap`] with a small
 /// number of keys.
 pub struct SparseIndexMap<'a, K: IndexedValue + 'a, V, P: PointerFamily<'a>> {
-    map: FxHashMap<K::Index, V>,
+    map: AHashMap<K::Index, V>,
     domain: P::Pointer<IndexedDomain<K>>,
 }
 
@@ -39,7 +39,7 @@ where
     /// Constructs an empty map within the given domain.
     pub fn new(domain: &P::Pointer<IndexedDomain<K>>) -> Self {
         SparseIndexMap {
-            map: FxHashMap::default(),
+            map: AHashMap::default(),
             domain: domain.clone(),
         }
     }
@@ -97,6 +97,18 @@ where
         let idx = key.to_index(&self.domain);
         self.map.entry(idx)
     }
+
+    /// Returns the number of entries in the map.
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.map.len()
+    }
+
+    /// Returns true if the map has no elements.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
 }
 
 impl<'a, K, V, P> Index<K::Index> for SparseIndexMap<'a, K, V, P>
@@ -118,6 +130,40 @@ where
 {
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index).unwrap()
+    }
+}
+
+impl<'a, K, V, P, M, U> FromIndexicalIterator<'a, K, P, M, (U, V)> for SparseIndexMap<'a, K, V, P>
+where
+    K: IndexedValue + 'a,
+    P: PointerFamily<'a>,
+    U: ToIndex<K, M>,
+{
+    fn from_indexical_iter(
+        iter: impl Iterator<Item = (U, V)>,
+        domain: &P::Pointer<IndexedDomain<K>>,
+    ) -> Self {
+        let map = iter
+            .map(|(u, v)| (u.to_index(domain), v))
+            .collect::<AHashMap<_, _>>();
+        SparseIndexMap {
+            map,
+            domain: domain.clone(),
+        }
+    }
+}
+
+impl<'a, 'b, K, V, P> IntoIterator for &'b SparseIndexMap<'a, K, V, P>
+where
+    K: IndexedValue + 'a + 'b,
+    V: 'b,
+    P: PointerFamily<'a>,
+{
+    type Item = (&'b K::Index, &'b V);
+    type IntoIter = hash_map::Iter<'b, K::Index, V>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.map.iter()
     }
 }
 
@@ -147,8 +193,13 @@ where
     /// Constructs a new map with an initial element of `mk_elem(i)` for each `i` in `domain`.
     #[inline]
     pub fn new(domain: &P::Pointer<IndexedDomain<K>>, mk_elem: impl FnMut(K::Index) -> V) -> Self {
+        Self::from_vec(domain, IndexVec::from_iter(domain.indices().map(mk_elem)))
+    }
+
+    #[inline]
+    fn from_vec(domain: &P::Pointer<IndexedDomain<K>>, map: IndexVec<K::Index, V>) -> Self {
         DenseIndexMap {
-            map: IndexVec::from_iter(domain.indices().map(mk_elem)),
+            map,
             domain: domain.clone(),
         }
     }
@@ -222,5 +273,26 @@ where
     #[inline]
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index).unwrap()
+    }
+}
+
+impl<'a, K, V, P, M, U> FromIndexicalIterator<'a, K, P, M, (U, V)> for DenseIndexMap<'a, K, V, P>
+where
+    K: IndexedValue + 'a,
+    P: PointerFamily<'a>,
+    U: ToIndex<K, M>,
+{
+    fn from_indexical_iter(
+        iter: impl Iterator<Item = (U, V)>,
+        domain: &P::Pointer<IndexedDomain<K>>,
+    ) -> Self {
+        let mut map = iter
+            .map(|(u, v)| (u.to_index(domain), v))
+            .collect::<AHashMap<_, _>>();
+        let vec = domain
+            .indices()
+            .map(|i| map.remove(&i).unwrap_or_else(|| panic!("Cannot use FromIndexicalIterator for a DenseIndexMap with a sparse key set")))
+            .collect::<IndexVec<_, _>>();
+        DenseIndexMap::from_vec(domain, vec)
     }
 }

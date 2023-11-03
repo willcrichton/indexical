@@ -1,4 +1,4 @@
-use fxhash::FxHashMap as HashMap;
+use ahash::AHashMap;
 use index_vec::{Idx, IndexVec};
 use std::fmt;
 
@@ -9,7 +9,7 @@ use crate::IndexedValue;
 /// Contains a reverse-mapping from `T` to `T::Index` for efficient lookups of indices.
 pub struct IndexedDomain<T: IndexedValue> {
     domain: IndexVec<T::Index, T>,
-    reverse_map: HashMap<T, T::Index>,
+    reverse_map: AHashMap<T, T::Index>,
 }
 
 impl<T: IndexedValue> IndexedDomain<T> {
