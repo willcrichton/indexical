@@ -14,7 +14,7 @@ use crate::{
 };
 use std::{
     mem::size_of,
-    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Not},
+    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXorAssign, Not},
     simd::{LaneCount, Simd, SimdElement, SupportedLaneCount},
     slice,
 };
@@ -26,6 +26,7 @@ pub trait SimdSetElement:
     + BitAnd<Output = Self>
     + Not<Output = Self>
     + BitOrAssign
+    + BitXorAssign
     + BitAndAssign
     + PartialEq
     + 'static
@@ -165,10 +166,8 @@ where
     index: usize,
     chunk_iter: slice::Iter<'a, Simd<T, N>>,
     lane_iter: slice::Iter<'a, T>,
-    bit: u32,
     lane: T,
 }
-
 impl<'a, T, const N: usize> SimdSetIter<'a, T, N>
 where
     T: SimdSetElement,
@@ -186,7 +185,6 @@ where
             index: 0,
             chunk_iter,
             lane_iter,
-            bit: 0,
             lane,
         }
     }
@@ -206,52 +204,40 @@ where
         }
 
         let lane_size = SimdBitset::<T, N>::lane_size() as u32;
-        loop {
-            let zeros = self.lane.trailing_zeros();
-            let idx = self.index;
-            let incr_amt = if zeros == 0 {
-                1
-            } else {
-                zeros.min(lane_size - self.bit)
-            };
+        while self.lane == T::ZERO {
+            self.index += lane_size as usize;
 
-            self.bit += incr_amt;
-            self.index += incr_amt as usize;
-
-            debug_assert!(incr_amt <= lane_size);
-            if incr_amt < lane_size {
-                self.lane = unsafe { self.lane.unchecked_shr(incr_amt) };
-            }
-
-            if self.bit == lane_size {
-                self.bit = 0;
-
-                loop {
-                    match self.lane_iter.next() {
-                        Some(lane) => {
-                            self.lane = *lane;
-                        }
-                        None => match self.chunk_iter.next() {
-                            Some(chunk) => {
-                                self.lane_iter = chunk.as_array().iter();
-                                self.lane = *self.lane_iter.next().unwrap();
-                            }
-                            None => return (zeros == 0).then_some(idx),
-                        },
-                    }
-
-                    if self.lane != T::ZERO {
-                        break;
-                    } else {
-                        self.index += lane_size as usize;
-                    }
+            let zero_simd = Simd::splat(T::ZERO);
+            let chunk_size = lane_size as usize * N;
+            match self.lane_iter.next() {
+                Some(lane) => {
+                    self.lane = *lane;
                 }
-            }
-
-            if zeros == 0 {
-                return Some(idx);
+                None => loop {
+                    match self.chunk_iter.next() {
+                        Some(chunk) => {
+                            if *chunk == zero_simd {
+                                self.index += chunk_size;
+                                continue;
+                            }
+                            self.lane_iter = chunk.as_array().iter();
+                            self.lane = *self.lane_iter.next().unwrap();
+                            break;
+                        }
+                        None => return None,
+                    }
+                },
             }
         }
+
+        let zeros = self.lane.trailing_zeros();
+        let idx = self.index + zeros as usize;
+        self.lane ^= unsafe { T::ONE.unchecked_shl(zeros) };
+        if idx >= self.set.nbits {
+            self.index = self.set.nbits;
+            return None;
+        }
+        return Some(idx);
     }
 }
 
