@@ -68,22 +68,22 @@ macro_rules! simd_set_element_impl {
 
             #[inline]
             unsafe fn unchecked_shl(self, rhs: u32) -> Self {
-                self.unchecked_shl(rhs)
+                <$n>::unchecked_shl(self, rhs)
             }
 
             #[inline]
             unsafe fn unchecked_shr(self, rhs: u32) -> Self {
-                self.unchecked_shr(rhs)
+                <$n>::unchecked_shr(self, rhs)
             }
 
             #[inline]
             fn trailing_zeros(self) -> u32 {
-                self.trailing_zeros()
+                <$n>::trailing_zeros(self)
             }
 
             #[inline]
             fn count_ones(self) -> u32 {
-                self.count_ones()
+                <$n>::count_ones(self)
             }
         }
     };
