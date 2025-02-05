@@ -15,7 +15,7 @@ use std::hash::Hash;
 pub use rustc_index::bit_set;
 
 /// A bitset specialized to `usize` indices.
-pub type RustcBitSet = bit_set::BitSet<usize>;
+pub type RustcBitSet = bit_set::DenseBitSet<usize>;
 
 impl BitSet for RustcBitSet {
     type Iter<'a> = bit_set::BitIter<'a, usize>;

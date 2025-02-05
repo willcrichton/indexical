@@ -190,7 +190,7 @@ where
     }
 }
 
-impl<'a, T, const N: usize> Iterator for SimdSetIter<'a, T, N>
+impl<T, const N: usize> Iterator for SimdSetIter<'_, T, N>
 where
     T: SimdSetElement,
     LaneCount<N>: SupportedLaneCount,
@@ -237,7 +237,7 @@ where
             self.index = self.set.nbits;
             return None;
         }
-        return Some(idx);
+        Some(idx)
     }
 }
 
@@ -251,7 +251,7 @@ where
 
     #[inline]
     fn empty(nbits: usize) -> Self {
-        let n_chunks = (nbits + Self::chunk_size() - 1) / Self::chunk_size();
+        let n_chunks = nbits.div_ceil(Self::chunk_size());
         SimdBitset {
             chunks: vec![Simd::from([T::ZERO; N]); n_chunks],
             nbits,
