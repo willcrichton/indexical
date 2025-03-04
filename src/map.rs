@@ -9,8 +9,8 @@ use ahash::AHashMap;
 use index_vec::{Idx, IndexVec};
 
 use crate::{
-    pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
     FromIndexicalIterator, IndexedDomain, IndexedValue, ToIndex,
+    pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
 };
 
 /// A mapping from indexed keys to values, implemented sparsely with a hash map.
@@ -65,7 +65,7 @@ where
     #[inline]
     pub unsafe fn get_unchecked<M>(&self, key: impl ToIndex<K, M>) -> &V {
         let idx = key.to_index(&self.domain);
-        self.map.get(&idx).unwrap_unchecked()
+        unsafe { self.map.get(&idx).unwrap_unchecked() }
     }
 
     /// Returns a mutable reference to a value for a given key.
@@ -75,7 +75,7 @@ where
     #[inline]
     pub unsafe fn get_unchecked_mut<M>(&mut self, key: impl ToIndex<K, M>) -> &mut V {
         let idx = key.to_index(&self.domain);
-        self.map.get_mut(&idx).unwrap_unchecked()
+        unsafe { self.map.get_mut(&idx).unwrap_unchecked() }
     }
 
     /// Inserts the key/value pair into `self`.
@@ -225,7 +225,7 @@ where
     #[inline]
     pub unsafe fn get_unchecked<M>(&self, idx: impl ToIndex<K, M>) -> &V {
         let idx = idx.to_index(&self.domain);
-        self.map.raw.get_unchecked(idx.index())
+        unsafe { self.map.raw.get_unchecked(idx.index()) }
     }
 
     /// Returns a mutable reference to a value for a given key.
@@ -235,7 +235,7 @@ where
     #[inline]
     pub unsafe fn get_unchecked_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
         let idx = idx.to_index(&self.domain);
-        self.map.raw.get_unchecked_mut(idx.index())
+        unsafe { self.map.raw.get_unchecked_mut(idx.index()) }
     }
 
     /// Inserts the key/value pair into `self`.
@@ -291,7 +291,13 @@ where
             .collect::<AHashMap<_, _>>();
         let vec = domain
             .indices()
-            .map(|i| map.remove(&i).unwrap_or_else(|| panic!("Cannot use FromIndexicalIterator for a DenseIndexMap with a sparse key set")))
+            .map(|i| {
+                map.remove(&i).unwrap_or_else(|| {
+                    panic!(
+                        "Cannot use FromIndexicalIterator for a DenseIndexMap with a sparse key set"
+                    )
+                })
+            })
             .collect::<IndexVec<_, _>>();
         DenseIndexMap::from_vec(domain, vec)
     }

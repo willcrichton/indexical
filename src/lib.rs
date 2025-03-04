@@ -10,7 +10,7 @@
 //!    You can choose to use the [`ArcFamily`](pointer::ArcFamily) if you need concurrency, or the [`RefFamily`](pointer::RefFamily) if you want to avoid reference-counting.
 
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
-#![cfg_attr(feature = "simd", feature(portable_simd, unchecked_math))]
+#![cfg_attr(feature = "simd", feature(portable_simd, unchecked_shifts))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs)]
 
@@ -60,7 +60,7 @@ impl<T: IndexedValue> ToIndex<T, MarkerOwned> for T {
     }
 }
 
-impl<'a, T: IndexedValue> ToIndex<T, MarkerRef> for &'a T {
+impl<T: IndexedValue> ToIndex<T, MarkerRef> for &T {
     #[inline]
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(self)
@@ -105,12 +105,6 @@ macro_rules! define_index_type {
     }
   }
 }
-
-/// Workaround for GAT lifetime issue.
-///
-/// See: <https://github.com/rust-lang/rust/issues/34511#issuecomment-373423999>
-pub trait Captures<'a> {}
-impl<'a, T: ?Sized> Captures<'a> for T {}
 
 /// Generic interface for converting iterators into indexical collections.
 pub trait FromIndexicalIterator<'a, T: IndexedValue + 'a, P: PointerFamily<'a>, M, A>:

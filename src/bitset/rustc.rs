@@ -5,20 +5,20 @@ pub extern crate rustc_index;
 extern crate rustc_mir_dataflow;
 
 use crate::{
+    IndexedValue,
     bitset::BitSet,
     pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
-    IndexedValue,
 };
 use rustc_mir_dataflow::JoinSemiLattice;
 use std::hash::Hash;
 
-pub use rustc_index::bit_set;
+pub use rustc_index::bit_set::{ChunkedBitSet, DenseBitSet, MixedBitIter, MixedBitSet};
 
 /// A bitset specialized to `usize` indices.
-pub type RustcBitSet = bit_set::BitSet<usize>;
+pub type RustcBitSet = MixedBitSet<usize>;
 
 impl BitSet for RustcBitSet {
-    type Iter<'a> = bit_set::BitIter<'a, usize>;
+    type Iter<'a> = MixedBitIter<'a, usize>;
 
     fn empty(size: usize) -> Self {
         RustcBitSet::new_empty(size)
@@ -36,28 +36,41 @@ impl BitSet for RustcBitSet {
         self.iter()
     }
 
+    #[inline]
     fn intersect(&mut self, other: &Self) {
-        self.intersect(other);
+        self.intersect_changed(other);
     }
 
     fn intersect_changed(&mut self, other: &Self) -> bool {
-        self.intersect(other)
+        // TODO: this code should be removed once the corresponding implementation
+        // has been added to rustc
+        match (self, other) {
+            (MixedBitSet::Large(self_large), MixedBitSet::Large(other_large)) => {
+                ChunkedBitSet::intersect(self_large, other_large)
+            }
+            (MixedBitSet::Small(self_small), MixedBitSet::Small(other_small)) => {
+                DenseBitSet::intersect(self_small, other_small)
+            }
+            _ => panic!("Mismatched domains"),
+        }
     }
 
     fn len(&self) -> usize {
-        self.count()
+        self.iter().count()
     }
 
+    #[inline]
     fn union(&mut self, other: &Self) {
-        self.union(other);
+        self.union_changed(other);
     }
 
     fn union_changed(&mut self, other: &Self) -> bool {
         self.union(other)
     }
 
+    #[inline]
     fn subtract(&mut self, other: &Self) {
-        self.subtract(other);
+        self.subtract_changed(other);
     }
 
     fn subtract_changed(&mut self, other: &Self) -> bool {
@@ -69,7 +82,8 @@ impl BitSet for RustcBitSet {
     }
 
     fn invert(&mut self) {
-        let mut inverted = RustcBitSet::new_filled(self.domain_size());
+        let mut inverted = RustcBitSet::new_empty(self.domain_size());
+        inverted.insert_all();
         inverted.subtract(self);
         *self = inverted;
     }

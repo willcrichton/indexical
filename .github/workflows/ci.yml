@@ -6,9 +6,8 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  # Should be same as nightly used by current Flowistry
-  NIGHTLY: nightly-2023-08-25
+env:  
+  NIGHTLY: nightly-2025-03-02
 
 jobs:
   tests:

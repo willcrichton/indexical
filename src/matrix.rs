@@ -3,8 +3,7 @@ use splitmut::SplitMut;
 use std::{fmt, hash::Hash};
 
 use crate::{
-    bitset::BitSet, pointer::PointerFamily, Captures, IndexSet, IndexedDomain, IndexedValue,
-    ToIndex,
+    IndexSet, IndexedDomain, IndexedValue, ToIndex, bitset::BitSet, pointer::PointerFamily,
 };
 
 /// An unordered collections of pairs `(R, C)`, implemented with a sparse bit-matrix.
@@ -65,12 +64,14 @@ where
     }
 
     /// Returns an iterator over the elements in `row`.
-    pub fn row(&self, row: &R) -> impl Iterator<Item = &C> + Captures<'a> + '_ {
+    pub fn row(&self, row: &R) -> impl Iterator<Item = &C> + use<'a, '_, R, C, S, P> {
         self.matrix.get(row).into_iter().flat_map(|set| set.iter())
     }
 
     /// Returns an iterator over all rows in the matrix.
-    pub fn rows(&self) -> impl Iterator<Item = (&R, &IndexSet<'a, C, S, P>)> + Captures<'a> + '_ {
+    pub fn rows(
+        &self,
+    ) -> impl Iterator<Item = (&R, &IndexSet<'a, C, S, P>)> + use<'a, '_, R, C, S, P> {
         self.matrix.iter()
     }
 
@@ -154,7 +155,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::{test_utils::TestIndexMatrix, IndexedDomain};
+    use crate::{IndexedDomain, test_utils::TestIndexMatrix};
     use std::rc::Rc;
 
     fn mk(s: &str) -> String {

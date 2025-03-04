@@ -3,8 +3,8 @@ use std::fmt;
 use index_vec::Idx;
 
 use crate::{
-    bitset::BitSet, pointer::PointerFamily, Captures, FromIndexicalIterator, IndexedDomain,
-    IndexedValue, ToIndex,
+    FromIndexicalIterator, IndexedDomain, IndexedValue, ToIndex, bitset::BitSet,
+    pointer::PointerFamily,
 };
 
 /// An unordered collections of `T`s, implemented with a bit-set.
@@ -35,13 +35,13 @@ where
 
     /// Returns an iterator over all the objects contained in `self`.
     #[inline]
-    pub fn iter(&self) -> impl Iterator<Item = &T> + Captures<'a> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
         self.indices().map(move |idx| self.domain.value(idx))
     }
 
     /// Returns an iterator over the pairs of indices and objects contained in `self`.
     #[inline]
-    pub fn iter_enumerated(&self) -> impl Iterator<Item = (T::Index, &T)> + Captures<'a> + '_ {
+    pub fn iter_enumerated(&self) -> impl Iterator<Item = (T::Index, &T)> + use<'a, '_, T, S, P> {
         self.indices().map(move |idx| (idx, self.domain.value(idx)))
     }
 
@@ -202,7 +202,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::{test_utils::TestIndexSet, IndexedDomain, IndexicalIteratorExt};
+    use crate::{IndexedDomain, IndexicalIteratorExt, test_utils::TestIndexSet};
     use std::rc::Rc;
 
     fn mk(s: &str) -> String {
