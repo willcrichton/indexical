@@ -190,7 +190,7 @@ where
     }
 }
 
-impl<'a, T, const N: usize> Iterator for SimdSetIter<'a, T, N>
+impl<T, const N: usize> Iterator for SimdSetIter<'_, T, N>
 where
     T: SimdSetElement,
     LaneCount<N>: SupportedLaneCount,
