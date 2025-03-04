@@ -68,12 +68,12 @@ macro_rules! simd_set_element_impl {
 
             #[inline]
             unsafe fn unchecked_shl(self, rhs: u32) -> Self {
-                <$n>::unchecked_shl(self, rhs)
+                unsafe { <$n>::unchecked_shl(self, rhs) }
             }
 
             #[inline]
             unsafe fn unchecked_shr(self, rhs: u32) -> Self {
-                <$n>::unchecked_shr(self, rhs)
+                unsafe { <$n>::unchecked_shr(self, rhs) }
             }
 
             #[inline]
@@ -237,7 +237,7 @@ where
             self.index = self.set.nbits;
             return None;
         }
-        return Some(idx);
+        Some(idx)
     }
 }
 
@@ -251,7 +251,7 @@ where
 
     #[inline]
     fn empty(nbits: usize) -> Self {
-        let n_chunks = (nbits + Self::chunk_size() - 1) / Self::chunk_size();
+        let n_chunks = nbits.div_ceil(Self::chunk_size());
         SimdBitset {
             chunks: vec![Simd::from([T::ZERO; N]); n_chunks],
             nbits,
