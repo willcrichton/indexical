@@ -5,8 +5,8 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use ahash::AHashMap;
 use index_vec::{Idx, IndexVec};
+use rustc_hash::FxHashMap;
 
 use crate::{
     FromIndexicalIterator, IndexedDomain, IndexedValue, ToIndex,
@@ -18,7 +18,7 @@ use crate::{
 /// This is more memory-efficient than the [`DenseIndexMap`] with a small
 /// number of keys.
 pub struct SparseIndexMap<'a, K: IndexedValue + 'a, V, P: PointerFamily<'a>> {
-    map: AHashMap<K::Index, V>,
+    map: FxHashMap<K::Index, V>,
     domain: P::Pointer<IndexedDomain<K>>,
 }
 
@@ -39,7 +39,7 @@ where
     /// Constructs an empty map within the given domain.
     pub fn new(domain: &P::Pointer<IndexedDomain<K>>) -> Self {
         SparseIndexMap {
-            map: AHashMap::default(),
+            map: FxHashMap::default(),
             domain: domain.clone(),
         }
     }
@@ -145,7 +145,7 @@ where
     ) -> Self {
         let map = iter
             .map(|(u, v)| (u.to_index(domain), v))
-            .collect::<AHashMap<_, _>>();
+            .collect::<FxHashMap<_, _>>();
         SparseIndexMap {
             map,
             domain: domain.clone(),
@@ -288,7 +288,7 @@ where
     ) -> Self {
         let mut map = iter
             .map(|(u, v)| (u.to_index(domain), v))
-            .collect::<AHashMap<_, _>>();
+            .collect::<FxHashMap<_, _>>();
         let vec = domain
             .indices()
             .map(|i| {

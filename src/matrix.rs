@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use rustc_hash::FxHashMap;
 use splitmut::SplitMut;
 use std::{fmt, hash::Hash};
 
@@ -11,7 +11,7 @@ use crate::{
 /// "Sparse" means "hash map from rows to bit-sets of columns". Subsequently, only column types `C` must be indexed,
 /// while row types `R` only need be hashable.
 pub struct IndexMatrix<'a, R, C: IndexedValue + 'a, S: BitSet, P: PointerFamily<'a>> {
-    pub(crate) matrix: AHashMap<R, IndexSet<'a, C, S, P>>,
+    pub(crate) matrix: FxHashMap<R, IndexSet<'a, C, S, P>>,
     empty_set: IndexSet<'a, C, S, P>,
     col_domain: P::Pointer<IndexedDomain<C>>,
 }
@@ -26,7 +26,7 @@ where
     /// Creates an empty matrix.
     pub fn new(col_domain: &P::Pointer<IndexedDomain<C>>) -> Self {
         IndexMatrix {
-            matrix: AHashMap::default(),
+            matrix: FxHashMap::default(),
             empty_set: IndexSet::new(col_domain),
             col_domain: col_domain.clone(),
         }
