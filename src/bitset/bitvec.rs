@@ -1,6 +1,6 @@
 //! A bit-set from the [`bitvec`] crate.
 
-use bitvec::{prelude::Lsb0, slice::IterOnes};
+use bitvec::{prelude::Lsb0, slice::IterOnes, store::BitStore};
 
 use crate::{
     bitset::BitSet,
@@ -43,7 +43,10 @@ impl BitSet for BitVec {
     }
 
     fn invert(&mut self) {
-        take_mut::take(self, |this| !this)
+        // Inline defn of Not::not bc it assumes ownership of the BitVec
+        for elem in self.as_raw_mut_slice() {
+            elem.store_value(!elem.load_value());
+        }
     }
 
     fn clear(&mut self) {

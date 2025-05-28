@@ -172,7 +172,7 @@ where
 /// This is more time-efficient than the [`SparseIndexMap`] for lookup,
 /// but it consumes more memory for missing elements.
 pub struct DenseIndexMap<'a, K: IndexedValue + 'a, V, P: PointerFamily<'a>> {
-    map: IndexVec<K::Index, V>,
+    map: IndexVec<K::Index, Option<V>>,
     domain: P::Pointer<IndexedDomain<K>>,
 }
 
@@ -192,12 +192,12 @@ where
 {
     /// Constructs a new map with an initial element of `mk_elem(i)` for each `i` in `domain`.
     #[inline]
-    pub fn new(domain: &P::Pointer<IndexedDomain<K>>, mk_elem: impl FnMut(K::Index) -> V) -> Self {
-        Self::from_vec(domain, IndexVec::from_iter(domain.indices().map(mk_elem)))
+    pub fn new(domain: &P::Pointer<IndexedDomain<K>>) -> Self {
+        Self::from_vec(domain, IndexVec::from_iter(domain.indices().map(|_| None)))
     }
 
     #[inline]
-    fn from_vec(domain: &P::Pointer<IndexedDomain<K>>, map: IndexVec<K::Index, V>) -> Self {
+    fn from_vec(domain: &P::Pointer<IndexedDomain<K>>, map: IndexVec<K::Index, Option<V>>) -> Self {
         DenseIndexMap {
             map,
             domain: domain.clone(),
@@ -208,14 +208,16 @@ where
     #[inline]
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> Option<&V> {
         let idx = idx.to_index(&self.domain);
-        self.map.get(idx)
+        debug_assert!(self.domain.contains_index(idx));
+        unsafe { self.map.raw.get_unchecked(idx.index()).as_ref() }
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
     #[inline]
     pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> Option<&mut V> {
         let idx = idx.to_index(&self.domain);
-        self.map.get_mut(idx)
+        debug_assert!(self.domain.contains_index(idx));
+        unsafe { self.map.raw.get_unchecked_mut(idx.index()).as_mut() }
     }
 
     /// Returns a reference to a value for a given key.
@@ -224,8 +226,7 @@ where
     /// This function has undefined behavior if `key` is not in `self`.
     #[inline]
     pub unsafe fn get_unchecked<M>(&self, idx: impl ToIndex<K, M>) -> &V {
-        let idx = idx.to_index(&self.domain);
-        unsafe { self.map.raw.get_unchecked(idx.index()) }
+        unsafe { self.get(idx).unwrap_unchecked() }
     }
 
     /// Returns a mutable reference to a value for a given key.
@@ -234,21 +235,20 @@ where
     /// This function has undefined behavior if `key` is not in `self`.
     #[inline]
     pub unsafe fn get_unchecked_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
-        let idx = idx.to_index(&self.domain);
-        unsafe { self.map.raw.get_unchecked_mut(idx.index()) }
+        unsafe { self.get_mut(idx).unwrap_unchecked() }
     }
 
     /// Inserts the key/value pair into `self`.
     #[inline]
     pub fn insert<M>(&mut self, idx: impl ToIndex<K, M>, value: V) {
         let idx = idx.to_index(&self.domain);
-        self.map[idx] = value;
+        self.map[idx] = Some(value);
     }
 
     /// Returns an iterator over the values of the map.
     #[inline]
     pub fn values(&self) -> impl Iterator<Item = &V> + '_ {
-        self.map.iter()
+        self.map.iter().filter_map(Option::as_ref)
     }
 }
 
@@ -291,13 +291,7 @@ where
             .collect::<FxHashMap<_, _>>();
         let vec = domain
             .indices()
-            .map(|i| {
-                map.remove(&i).unwrap_or_else(|| {
-                    panic!(
-                        "Cannot use FromIndexicalIterator for a DenseIndexMap with a sparse key set"
-                    )
-                })
-            })
+            .map(|i| map.remove(&i))
             .collect::<IndexVec<_, _>>();
         DenseIndexMap::from_vec(domain, vec)
     }
