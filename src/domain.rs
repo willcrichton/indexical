@@ -7,25 +7,19 @@ use crate::IndexedValue;
 /// An indexed collection of objects.
 ///
 /// Contains a reverse-mapping from `T` to `T::Index` for efficient lookups of indices.
+#[derive(Clone, Default)]
 pub struct IndexedDomain<T: IndexedValue> {
     domain: IndexVec<T::Index, T>,
     reverse_map: FxHashMap<T, T::Index>,
 }
 
 impl<T: IndexedValue> IndexedDomain<T> {
-    /// Creates a new domain from an indexed vector.
-    ///
-    /// Consider using the [`FromIterator`] implementation if you don't want to manually construct
-    /// an [`IndexVec`] object.
+    /// Creates an empty domain,
     #[inline]
-    pub fn new(domain: IndexVec<T::Index, T>) -> Self {
-        let reverse_map = domain
-            .iter_enumerated()
-            .map(|(idx, value)| (value.clone(), idx))
-            .collect();
+    pub fn new() -> Self {
         IndexedDomain {
-            domain,
-            reverse_map,
+            domain: IndexVec::new(),
+            reverse_map: FxHashMap::default(),
         }
     }
 
@@ -47,8 +41,13 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Returns true if `value` is contained in the domain.
     #[inline]
-    pub fn contains(&self, value: &T) -> bool {
+    pub fn contains_value(&self, value: &T) -> bool {
         self.reverse_map.contains_key(value)
+    }
+
+    /// Returns true if `index` is contained in the domain.
+    pub fn contains_index(&self, index: T::Index) -> bool {
+        index.index() < self.domain.len()
     }
 
     /// Adds `value` to the domain, returning its new index.
@@ -79,7 +78,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
     /// to the domain if it does not exist yet.
     #[inline]
     pub fn ensure(&mut self, value: &T) -> T::Index {
-        if !self.contains(value) {
+        if !self.contains_value(value) {
             self.insert(value.clone())
         } else {
             self.index(value)
@@ -107,16 +106,33 @@ impl<T: IndexedValue> IndexedDomain<T> {
     }
 }
 
+impl<T: IndexedValue> From<IndexVec<T::Index, T>> for IndexedDomain<T> {
+    /// Creates a new domain from an indexed vector.
+    ///
+    /// Consider using the [`FromIterator`] implementation if you don't want to manually construct
+    /// an [`IndexVec`] object.
+    fn from(domain: IndexVec<T::Index, T>) -> Self {
+        let reverse_map = domain
+            .iter_enumerated()
+            .map(|(idx, value)| (value.clone(), idx))
+            .collect();
+        IndexedDomain {
+            domain,
+            reverse_map,
+        }
+    }
+}
+
 impl<T: IndexedValue> FromIterator<T> for IndexedDomain<T> {
     fn from_iter<Iter: IntoIterator<Item = T>>(iter: Iter) -> Self {
-        let domain = iter.into_iter().collect();
-        IndexedDomain::new(domain)
+        let domain = iter.into_iter().collect::<IndexVec<T::Index, T>>();
+        IndexedDomain::from(domain)
     }
 }
 
 impl<T: IndexedValue + fmt::Debug> fmt::Debug for IndexedDomain<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.domain)
+        self.domain.fmt(f)
     }
 }
 
@@ -131,7 +147,7 @@ fn test_domain() {
     let b = d.index(&mk("b"));
     assert_eq!(d.value(a), "a");
     assert_eq!(d.value(b), "b");
-    assert!(d.contains(&mk("a")));
-    assert!(!d.contains(&mk("c")));
+    assert!(d.contains_value(&mk("a")));
+    assert!(!d.contains_value(&mk("c")));
     assert_eq!(d.len(), 2);
 }

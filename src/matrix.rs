@@ -1,5 +1,4 @@
 use rustc_hash::FxHashMap;
-use splitmut::SplitMut;
 use std::{fmt, hash::Hash};
 
 use crate::{
@@ -59,7 +58,11 @@ where
         self.ensure_row(to.clone());
 
         // SAFETY: `from` != `to` therefore this is a disjoint mutable borrow
-        let (from, to) = unsafe { self.matrix.get2_unchecked_mut(&from, &to) };
+        let [Some(from), Some(to)] =
+            (unsafe { self.matrix.get_disjoint_unchecked_mut([&from, &to]) })
+        else {
+            unreachable!()
+        };
         to.union_changed(from)
     }
 
