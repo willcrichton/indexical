@@ -24,9 +24,9 @@ pub mod map;
 mod matrix;
 pub mod pointer;
 mod set;
-pub mod vec;
 #[cfg(test)]
 mod test_utils;
+pub mod vec;
 
 #[doc(hidden)]
 pub use index_vec as _index_vec;
