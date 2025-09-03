@@ -32,6 +32,10 @@ impl BitSet for RustcBitSet {
         self.insert(index)
     }
 
+    fn remove(&mut self, index: usize) -> bool {
+        self.remove(index)
+    }
+
     fn iter(&self) -> Self::Iter<'_> {
         self.iter()
     }
@@ -101,7 +105,7 @@ impl BitSet for RustcBitSet {
 pub type IndexSet<T> = crate::IndexSet<'static, T, RustcBitSet, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, RustcBitSet, ArcFamily>;
+pub type ArcIndexSet<T> = crate::IndexSet<'static, T, RustcBitSet, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;

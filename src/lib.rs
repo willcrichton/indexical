@@ -24,6 +24,7 @@ pub mod map;
 mod matrix;
 pub mod pointer;
 mod set;
+pub mod vec;
 #[cfg(test)]
 mod test_utils;
 

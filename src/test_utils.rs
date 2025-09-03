@@ -50,4 +50,10 @@ pub fn impl_test<T: BitSet>() {
 
     bv.clear();
     assert_eq!(bv.iter().collect::<Vec<_>>(), Vec::<usize>::new());
+
+    let mut bv = T::empty(10);
+    bv.insert(0);
+    assert!(bv.contains(0));
+    bv.remove(0);
+    assert!(!bv.contains(0));
 }

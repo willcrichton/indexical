@@ -94,6 +94,35 @@ where
     }
 }
 
+impl<'a, R, C, S, P> IndexMatrix<'a, R, C, S, P>
+where
+    R: PartialEq + Eq + Hash + Clone + 'a,
+    C: IndexedValue + 'a,
+    S: BitSet,
+    P: PointerFamily<'a>,
+{
+    // R = Local
+    // C = Allocation
+
+    /// Transposes the matrix, assuming the row type is also indexed.
+    pub fn transpose<T, M>(
+        &self,
+        row_domain: &P::Pointer<IndexedDomain<T>>,
+    ) -> IndexMatrix<'a, C::Index, T, S, P>
+    where
+        T: IndexedValue + 'a,
+        R: ToIndex<T, M>,
+    {
+        let mut mtx = IndexMatrix::new(row_domain);
+        for (row, cols) in self.rows() {
+            for col in cols.indices() {
+                mtx.insert(col, row.clone());
+            }
+        }
+        mtx
+    }
+}
+
 impl<'a, R, C, S, P> PartialEq for IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone,

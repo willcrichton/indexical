@@ -35,6 +35,10 @@ impl BitSet for RoaringSet {
         self.set.insert(index as u32)
     }
 
+    fn remove(&mut self, index: usize) -> bool {
+        self.set.remove(index as u32)
+    }
+
     fn contains(&self, index: usize) -> bool {
         self.set.contains(index as u32)
     }
@@ -86,7 +90,7 @@ impl BitSet for RoaringSet {
 pub type IndexSet<T> = crate::IndexSet<'static, T, RoaringSet, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`ArcFamily`].
-pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, RoaringSet, ArcFamily>;
+pub type ArcIndexSet<T> = crate::IndexSet<'static, T, RoaringSet, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, RoaringSet, RefFamily<'a>>;

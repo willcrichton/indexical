@@ -26,6 +26,12 @@ impl BitSet for BitVec {
         !contained
     }
 
+    fn remove(&mut self, index: usize) -> bool {
+        let contained = self[index];
+        self.set(index, false);
+        contained
+    }
+
     fn iter(&self) -> Self::Iter<'_> {
         self.iter_ones()
     }
@@ -72,7 +78,7 @@ impl BitSet for BitVec {
 pub type IndexSet<T> = crate::IndexSet<'static, T, BitVec, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`BitVec`] implementation with the [`ArcFamily`].
-pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, BitVec, ArcFamily>;
+pub type ArcIndexSet<T> = crate::IndexSet<'static, T, BitVec, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`BitVec`] implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, BitVec, RefFamily<'a>>;

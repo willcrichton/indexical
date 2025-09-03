@@ -276,6 +276,23 @@ where
     }
 
     #[inline]
+    fn remove(&mut self, index: usize) -> bool {
+        let (chunk_idx, lane_idx, bit) = self.coords(index);
+
+        debug_assert!(chunk_idx < self.chunks.len());
+        debug_assert!(lane_idx < N);
+        debug_assert!(bit < Self::lane_size() as u32);
+
+        unsafe {
+            let chunk = self.chunks.get_unchecked_mut(chunk_idx);
+            let lane = chunk.as_mut_array().get_unchecked_mut(lane_idx);
+            *lane &= T::ZERO.unchecked_shl(bit);
+        }
+
+        true
+    }
+
+    #[inline]
     fn contains(&self, index: usize) -> bool {
         let (chunk_idx, lane_idx, bit) = self.coords(index);
         self.get(chunk_idx, lane_idx, bit)
@@ -351,7 +368,7 @@ where
 pub type IndexSet<T> = crate::IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type ArcIndexSet<'a, T> = crate::IndexSet<'a, T, SimdBitset<u64, 4>, ArcFamily>;
+pub type ArcIndexSet<T> = crate::IndexSet<'static, T, SimdBitset<u64, 4>, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;

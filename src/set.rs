@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// An unordered collections of `T`s, implemented with a bit-set.
-pub struct IndexSet<'a, T: IndexedValue + 'a, S: BitSet, P: PointerFamily<'a>> {
+pub struct IndexSet<'a, T: IndexedValue + 'a, S, P: PointerFamily<'a>> {
     set: S,
     domain: P::Pointer<IndexedDomain<T>>,
 }
@@ -75,6 +75,13 @@ where
     pub fn insert<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.insert(elt.index())
+    }
+
+    /// Removes the element `elt` from `self`, returning true if `self` changed.
+    #[inline]
+    pub fn remove<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
+        let elt = elt.to_index(&self.domain);
+        self.set.remove(elt.index())
     }
 
     /// Adds each element of `other` to `self`.

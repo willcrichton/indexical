@@ -16,6 +16,9 @@ pub trait BitSet: Clone + PartialEq {
     /// Sets `index` to 1, returning true if `self` changed.
     fn insert(&mut self, index: usize) -> bool;
 
+    /// Sets `index` to 0, returning true if `self` changed.
+    fn remove(&mut self, index: usize) -> bool;
+
     /// Returns true if `index` is 1.
     fn contains(&self, index: usize) -> bool;
 

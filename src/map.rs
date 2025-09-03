@@ -5,12 +5,12 @@ use std::{
     ops::{Index, IndexMut},
 };
 
-use index_vec::{Idx, IndexVec};
 use rustc_hash::FxHashMap;
 
 use crate::{
     FromIndexicalIterator, IndexedDomain, IndexedValue, ToIndex,
     pointer::{ArcFamily, PointerFamily, RcFamily, RefFamily},
+    vec::IndexVec,
 };
 
 /// A mapping from indexed keys to values, implemented sparsely with a hash map.
@@ -23,10 +23,10 @@ pub struct SparseIndexMap<'a, K: IndexedValue + 'a, V, P: PointerFamily<'a>> {
 }
 
 /// [`SparseIndexMap`] specialized to the [`RcFamily`].
-pub type SparseRcIndexMap<'a, K, V> = SparseIndexMap<'a, K, V, RcFamily>;
+pub type SparseRcIndexMap<K, V> = SparseIndexMap<'static, K, V, RcFamily>;
 
 /// [`SparseIndexMap`] specialized to the [`ArcFamily`].
-pub type SparseArcIndexMap<'a, K, V> = SparseIndexMap<'a, K, V, ArcFamily>;
+pub type SparseArcIndexMap<K, V> = SparseIndexMap<'static, K, V, ArcFamily>;
 
 /// [`SparseIndexMap`] specialized to the [`RefFamily`].
 pub type SparseRefIndexMap<'a, K, V> = SparseIndexMap<'a, K, V, RefFamily<'a>>;
@@ -111,6 +111,25 @@ where
     }
 }
 
+impl<'a, K, V, P> PartialEq for SparseIndexMap<'a, K, V, P>
+where
+    K: IndexedValue + 'a,
+    P: PointerFamily<'a>,
+    V: PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.map == other.map
+    }
+}
+
+impl<'a, K, V, P> Eq for SparseIndexMap<'a, K, V, P>
+where
+    K: IndexedValue + 'a,
+    P: PointerFamily<'a>,
+    V: Eq,
+{
+}
+
 impl<'a, K, V, P> Index<K::Index> for SparseIndexMap<'a, K, V, P>
 where
     K: IndexedValue + 'a,
@@ -171,16 +190,15 @@ where
 ///
 /// This is more time-efficient than the [`SparseIndexMap`] for lookup,
 /// but it consumes more memory for missing elements.
-pub struct DenseIndexMap<'a, K: IndexedValue + 'a, V, P: PointerFamily<'a>> {
-    map: IndexVec<K::Index, Option<V>>,
-    domain: P::Pointer<IndexedDomain<K>>,
-}
+pub struct DenseIndexMap<'a, K: IndexedValue + 'a, V, P: PointerFamily<'a>>(
+    IndexVec<'a, K, Option<V>, P>,
+);
 
 /// [`DenseIndexMap`] specialized to the [`RcFamily`].
-pub type DenseRcIndexMap<'a, K, V> = DenseIndexMap<'a, K, V, RcFamily>;
+pub type DenseRcIndexMap<K, V> = DenseIndexMap<'static, K, V, RcFamily>;
 
 /// [`DenseIndexMap`] specialized to the [`ArcFamily`].
-pub type DenseArcIndexMap<'a, K, V> = DenseIndexMap<'a, K, V, ArcFamily>;
+pub type DenseArcIndexMap<K, V> = DenseIndexMap<'static, K, V, ArcFamily>;
 
 /// [`DenseIndexMap`] specialized to the [`RefFamily`].
 pub type DenseRefIndexMap<'a, K, V> = DenseIndexMap<'a, K, V, RefFamily<'a>>;
@@ -191,40 +209,24 @@ where
     P: PointerFamily<'a>,
 {
     /// Constructs a new map with an initial element of `mk_elem(i)` for each `i` in `domain`.
-    #[inline]
     pub fn new(domain: &P::Pointer<IndexedDomain<K>>) -> Self {
-        Self::from_vec(domain, IndexVec::from_iter(domain.indices().map(|_| None)))
-    }
-
-    #[inline]
-    fn from_vec(domain: &P::Pointer<IndexedDomain<K>>, map: IndexVec<K::Index, Option<V>>) -> Self {
-        DenseIndexMap {
-            map,
-            domain: domain.clone(),
-        }
+        Self(IndexVec::from_fn(|_| None, domain))
     }
 
     /// Returns an immutable reference to a value for a given key if it exists.
-    #[inline]
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> Option<&V> {
-        let idx = idx.to_index(&self.domain);
-        debug_assert!(self.domain.contains_index(idx));
-        unsafe { self.map.raw.get_unchecked(idx.index()).as_ref() }
+        self.0.get(idx).as_ref()
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
-    #[inline]
     pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> Option<&mut V> {
-        let idx = idx.to_index(&self.domain);
-        debug_assert!(self.domain.contains_index(idx));
-        unsafe { self.map.raw.get_unchecked_mut(idx.index()).as_mut() }
+        self.0.get_mut(idx).as_mut()
     }
 
     /// Returns a reference to a value for a given key.
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
-    #[inline]
     pub unsafe fn get_unchecked<M>(&self, idx: impl ToIndex<K, M>) -> &V {
         unsafe { self.get(idx).unwrap_unchecked() }
     }
@@ -233,22 +235,19 @@ where
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
-    #[inline]
     pub unsafe fn get_unchecked_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
         unsafe { self.get_mut(idx).unwrap_unchecked() }
     }
 
     /// Inserts the key/value pair into `self`.
-    #[inline]
     pub fn insert<M>(&mut self, idx: impl ToIndex<K, M>, value: V) {
-        let idx = idx.to_index(&self.domain);
-        self.map[idx] = Some(value);
+        let idx = idx.to_index(&self.0.domain);
+        self.0[idx] = Some(value);
     }
 
     /// Returns an iterator over the values of the map.
-    #[inline]
     pub fn values(&self) -> impl Iterator<Item = &V> + '_ {
-        self.map.iter().filter_map(Option::as_ref)
+        self.0.iter().filter_map(Option::as_ref)
     }
 }
 
@@ -286,13 +285,10 @@ where
         iter: impl Iterator<Item = (U, V)>,
         domain: &P::Pointer<IndexedDomain<K>>,
     ) -> Self {
-        let mut map = iter
-            .map(|(u, v)| (u.to_index(domain), v))
-            .collect::<FxHashMap<_, _>>();
-        let vec = domain
-            .indices()
-            .map(|i| map.remove(&i))
-            .collect::<IndexVec<_, _>>();
-        DenseIndexMap::from_vec(domain, vec)
+        let mut map = DenseIndexMap::new(domain);
+        for (u, v) in iter {
+            map.insert(u, v);
+        }
+        map
     }
 }
