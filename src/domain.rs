@@ -7,10 +7,35 @@ use crate::IndexedValue;
 /// An indexed collection of objects.
 ///
 /// Contains a reverse-mapping from `T` to `T::Index` for efficient lookups of indices.
-#[derive(Clone, Default)]
+#[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct IndexedDomain<T: IndexedValue> {
     domain: IndexVec<T::Index, T>,
+    #[cfg_attr(feature = "serde", serde(skip))]
     reverse_map: FxHashMap<T, T::Index>,
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T: IndexedValue + serde::Deserialize<'de>> serde::Deserialize<'de> for IndexedDomain<T> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(serde::Deserialize)]
+        struct IndexedDomain2<T: IndexedValue> {
+            domain: IndexVec<T::Index, T>,
+        }
+        let domain = IndexedDomain2::<T>::deserialize(deserializer)?;
+        let reverse_map = domain
+            .domain
+            .iter_enumerated()
+            .map(|(idx, value)| (value.clone(), idx))
+            .collect();
+        Ok(IndexedDomain {
+            domain: domain.domain,
+            reverse_map,
+        })
+    }
 }
 
 impl<T: IndexedValue> IndexedDomain<T> {
@@ -103,6 +128,12 @@ impl<T: IndexedValue> IndexedDomain<T> {
     #[inline]
     pub fn iter_enumerated(&self) -> impl Iterator<Item = (T::Index, &T)> + '_ {
         self.domain.iter_enumerated()
+    }
+}
+
+impl<T: IndexedValue> Default for IndexedDomain<T> {
+    fn default() -> Self {
+        IndexedDomain::new()
     }
 }
 
