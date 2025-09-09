@@ -63,12 +63,14 @@ where
     }
 
     /// Returns an iterator over immutable references to the values.
-    pub fn iter(&self) -> impl Iterator<Item = &V> {
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = &V> + ExactSizeIterator<Item = &V> {
         self.vec.iter()
     }
 
     /// Returns an iterator over mutable references to the values.
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut V> {
+    pub fn iter_mut(
+        &mut self,
+    ) -> impl DoubleEndedIterator<Item = &mut V> + ExactSizeIterator<Item = &mut V> {
         self.vec.iter_mut()
     }
 

@@ -22,8 +22,6 @@ fn to_usize(i: u32) -> usize {
 }
 
 impl BitSet for RoaringSet {
-    type Iter<'a> = std::iter::Map<roaring::bitmap::Iter<'a>, fn(i: u32) -> usize>;
-
     fn empty(size: usize) -> Self {
         RoaringSet {
             set: RoaringBitmap::new(),
@@ -43,7 +41,7 @@ impl BitSet for RoaringSet {
         self.set.contains(index as u32)
     }
 
-    fn iter(&self) -> Self::Iter<'_> {
+    fn iter(&self) -> impl Iterator<Item = usize> {
         self.set.iter().map(to_usize)
     }
 

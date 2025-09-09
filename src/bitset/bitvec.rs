@@ -1,6 +1,6 @@
 //! A bit-set from the [`bitvec`] crate.
 
-use bitvec::{prelude::Lsb0, slice::IterOnes, store::BitStore};
+use bitvec::{prelude::Lsb0, store::BitStore};
 
 use crate::{
     bitset::BitSet,
@@ -10,8 +10,6 @@ use crate::{
 pub use ::bitvec::{self, vec::BitVec};
 
 impl BitSet for BitVec {
-    type Iter<'a> = IterOnes<'a, usize, Lsb0>;
-
     fn empty(size: usize) -> Self {
         bitvec::bitvec![usize, Lsb0; 0; size]
     }
@@ -32,7 +30,7 @@ impl BitSet for BitVec {
         contained
     }
 
-    fn iter(&self) -> Self::Iter<'_> {
+    fn iter(&self) -> impl Iterator<Item = usize> {
         self.iter_ones()
     }
 
@@ -56,7 +54,9 @@ impl BitSet for BitVec {
     }
 
     fn clear(&mut self) {
-        self.clear();
+        for elem in self.as_raw_mut_slice() {
+            elem.store_value(0);
+        }
     }
 
     fn subtract(&mut self, other: &Self) {

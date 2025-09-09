@@ -67,14 +67,12 @@ where
     }
 
     /// Returns an iterator over the elements in `row`.
-    pub fn row(&self, row: &R) -> impl Iterator<Item = &C> + use<'a, '_, R, C, S, P> {
+    pub fn row(&self, row: &R) -> impl Iterator<Item = &C> {
         self.matrix.get(row).into_iter().flat_map(|set| set.iter())
     }
 
     /// Returns an iterator over all rows in the matrix.
-    pub fn rows(
-        &self,
-    ) -> impl Iterator<Item = (&R, &IndexSet<'a, C, S, P>)> + use<'a, '_, R, C, S, P> {
+    pub fn rows(&self) -> impl ExactSizeIterator<Item = (&R, &IndexSet<'a, C, S, P>)> {
         self.matrix.iter()
     }
 

@@ -5,11 +5,6 @@
 /// Implement this trait if you want to provide a custom bit-set
 /// beneath the indexical abstractions.
 pub trait BitSet: Clone + PartialEq {
-    /// Type of iterator returned by `iter`.
-    type Iter<'a>: Iterator<Item = usize>
-    where
-        Self: 'a;
-
     /// Constructs a new bit-set with a domain of size `size`.
     fn empty(size: usize) -> Self;
 
@@ -23,7 +18,7 @@ pub trait BitSet: Clone + PartialEq {
     fn contains(&self, index: usize) -> bool;
 
     /// Returns an iterator over all the indices of ones in the bit-set.
-    fn iter(&self) -> Self::Iter<'_>;
+    fn iter(&self) -> impl Iterator<Item = usize>;
 
     /// Returns the number of ones in the bit-set.
     fn len(&self) -> usize;

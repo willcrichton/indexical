@@ -28,112 +28,94 @@ where
     }
 
     /// Returns an iterator over all the indices contained in `self`.
-    #[inline]
-    pub fn indices(&self) -> impl Iterator<Item = T::Index> + '_ {
+    pub fn indices(&self) -> impl Iterator<Item = T::Index> {
         self.set.iter().map(T::Index::from_usize)
     }
 
     /// Returns an iterator over all the objects contained in `self`.
-    #[inline]
-    pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.indices().map(move |idx| self.domain.value(idx))
     }
 
     /// Returns an iterator over the pairs of indices and objects contained in `self`.
-    #[inline]
-    pub fn iter_enumerated(&self) -> impl Iterator<Item = (T::Index, &T)> + use<'a, '_, T, S, P> {
+    pub fn iter_enumerated(&self) -> impl Iterator<Item = (T::Index, &T)> {
         self.indices().map(move |idx| (idx, self.domain.value(idx)))
     }
 
     /// Returns true if `index` is contained in `self`.
-    #[inline]
     pub fn contains<M>(&self, index: impl ToIndex<T, M>) -> bool {
         let elem = index.to_index(&self.domain);
         self.set.contains(elem.index())
     }
 
     /// Returns the number of elements in `self`.
-    #[inline]
     pub fn len(&self) -> usize {
         self.set.len()
     }
 
     /// Return true if `self` has no elements.
-    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
     /// Returns true if every element in `other` is also in `self`.
-    #[inline]
     pub fn is_superset(&self, other: &IndexSet<'a, T, S, P>) -> bool {
         self.set.superset(&other.set)
     }
 
     /// Adds the element `elt` to `self`, returning true if `self` changed.
-    #[inline]
     pub fn insert<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.insert(elt.index())
     }
 
     /// Removes the element `elt` from `self`, returning true if `self` changed.
-    #[inline]
     pub fn remove<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.remove(elt.index())
     }
 
     /// Adds each element of `other` to `self`.
-    #[inline]
     pub fn union(&mut self, other: &IndexSet<'a, T, S, P>) {
         self.set.union(&other.set);
     }
 
     /// Adds each element of `other` to `self`, returning true if `self` changed.
-    #[inline]
     pub fn union_changed(&mut self, other: &IndexSet<'a, T, S, P>) -> bool {
         self.set.union_changed(&other.set)
     }
 
     /// Removes every element of `other` from `self`.
-    #[inline]
     pub fn subtract(&mut self, other: &IndexSet<'a, T, S, P>) {
         self.set.subtract(&other.set)
     }
 
     /// Removes every element of `other` from `self`, returning true if `self` changed.
-    #[inline]
     pub fn subtract_changed(&mut self, other: &IndexSet<'a, T, S, P>) -> bool {
         self.set.subtract_changed(&other.set)
     }
 
     /// Removes every element of `self` not in `other`.
-    #[inline]
     pub fn intersect(&mut self, other: &IndexSet<'a, T, S, P>) {
         self.set.intersect(&other.set)
     }
 
     /// Removes every element of `self` not in `other`, returning true if `self` changed.
-    #[inline]
     pub fn intersect_changed(&mut self, other: &IndexSet<'a, T, S, P>) -> bool {
         self.set.intersect_changed(&other.set)
     }
 
     /// Adds every element of the domain to `self`.
-    #[inline]
     pub fn insert_all(&mut self) {
         self.set.insert_all()
     }
 
     /// Removes every element from `self`.
-    #[inline]
     pub fn clear(&mut self) {
         self.set.clear();
     }
 
     /// Returns a reference to the inner set.
-    #[inline]
     pub fn inner(&self) -> &S {
         &self.set
     }

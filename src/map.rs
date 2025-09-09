@@ -45,14 +45,12 @@ where
     }
 
     /// Returns an immutable reference to a value for a given key if it exists.
-    #[inline]
     pub fn get<M>(&self, key: impl ToIndex<K, M>) -> Option<&V> {
         let idx = key.to_index(&self.domain);
         self.map.get(&idx)
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
-    #[inline]
     pub fn get_mut<M>(&mut self, key: impl ToIndex<K, M>) -> Option<&mut V> {
         let idx = key.to_index(&self.domain);
         self.map.get_mut(&idx)
@@ -62,7 +60,6 @@ where
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
-    #[inline]
     pub unsafe fn get_unchecked<M>(&self, key: impl ToIndex<K, M>) -> &V {
         let idx = key.to_index(&self.domain);
         unsafe { self.map.get(&idx).unwrap_unchecked() }
@@ -72,40 +69,34 @@ where
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
-    #[inline]
     pub unsafe fn get_unchecked_mut<M>(&mut self, key: impl ToIndex<K, M>) -> &mut V {
         let idx = key.to_index(&self.domain);
         unsafe { self.map.get_mut(&idx).unwrap_unchecked() }
     }
 
     /// Inserts the key/value pair into `self`.
-    #[inline]
     pub fn insert<M>(&mut self, key: impl ToIndex<K, M>, value: V) {
         let idx = key.to_index(&self.domain);
         self.map.insert(idx, value);
     }
 
     /// Returns an iterator over the values of the map.
-    #[inline]
-    pub fn values(&self) -> impl Iterator<Item = &V> + '_ {
+    pub fn values(&self) -> impl ExactSizeIterator<Item = &V> {
         self.map.values()
     }
 
     /// Returns a mutable entry into the map for the given key.
-    #[inline]
     pub fn entry<M>(&mut self, key: impl ToIndex<K, M>) -> hash_map::Entry<'_, K::Index, V> {
         let idx = key.to_index(&self.domain);
         self.map.entry(idx)
     }
 
     /// Returns the number of entries in the map.
-    #[inline]
     pub fn len(&self) -> usize {
         self.map.len()
     }
 
     /// Returns true if the map has no elements.
-    #[inline]
     pub fn is_empty(&self) -> bool {
         self.map.is_empty()
     }
@@ -246,7 +237,7 @@ where
     }
 
     /// Returns an iterator over the values of the map.
-    pub fn values(&self) -> impl Iterator<Item = &V> + '_ {
+    pub fn values(&self) -> impl Iterator<Item = &V> {
         self.0.iter().filter_map(Option::as_ref)
     }
 }
@@ -258,7 +249,6 @@ where
 {
     type Output = V;
 
-    #[inline]
     fn index(&self, index: K::Index) -> &Self::Output {
         self.get(index).unwrap()
     }
@@ -269,7 +259,6 @@ where
     K: IndexedValue + 'a,
     P: PointerFamily<'a>,
 {
-    #[inline]
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index).unwrap()
     }

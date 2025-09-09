@@ -66,22 +66,18 @@ macro_rules! simd_set_element_impl {
             const ONE: Self = 1;
             const MAX: Self = Self::MAX;
 
-            #[inline]
             unsafe fn unchecked_shl(self, rhs: u32) -> Self {
                 unsafe { <$n>::unchecked_shl(self, rhs) }
             }
 
-            #[inline]
             unsafe fn unchecked_shr(self, rhs: u32) -> Self {
                 unsafe { <$n>::unchecked_shr(self, rhs) }
             }
 
-            #[inline]
             fn trailing_zeros(self) -> u32 {
                 <$n>::trailing_zeros(self)
             }
 
-            #[inline]
             fn count_ones(self) -> u32 {
                 <$n>::count_ones(self)
             }
@@ -117,14 +113,12 @@ where
         size_of::<T>() * 8
     }
 
-    #[inline(always)]
     const fn coords(&self, index: usize) -> (usize, usize, u32) {
         let (chunk, index) = (index / Self::chunk_size(), index % Self::chunk_size());
         let (lane, index) = (index / Self::lane_size(), index % Self::lane_size());
         (chunk, lane, index as u32)
     }
 
-    #[inline(always)]
     fn get(&self, chunk_idx: usize, lane_idx: usize, bit: u32) -> bool {
         debug_assert!(chunk_idx < self.chunks.len());
         debug_assert!(lane_idx < N);
@@ -137,7 +131,6 @@ where
         }
     }
 
-    #[inline(always)]
     fn zip_mut(&mut self, other: &Self, mut op: impl FnMut(&mut Simd<T, N>, &Simd<T, N>)) {
         debug_assert!(other.chunks.len() == self.chunks.len());
 
@@ -173,7 +166,6 @@ where
     T: SimdSetElement,
     LaneCount<N>: SupportedLaneCount,
 {
-    #[inline]
     fn new(set: &'a SimdBitset<T, N>) -> Self {
         let mut chunk_iter = set.chunks.iter();
         let chunk = chunk_iter.next().unwrap();
@@ -197,7 +189,6 @@ where
 {
     type Item = usize;
 
-    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         if self.index >= self.set.nbits {
             return None;
@@ -247,9 +238,6 @@ where
     Simd<T, N>: for<'a> BitOr<&'a Simd<T, N>, Output = Simd<T, N>>,
     Simd<T, N>: for<'a> BitAnd<&'a Simd<T, N>, Output = Simd<T, N>>,
 {
-    type Iter<'a> = SimdSetIter<'a, T, N>;
-
-    #[inline]
     fn empty(nbits: usize) -> Self {
         let n_chunks = nbits.div_ceil(Self::chunk_size());
         SimdBitset {
@@ -258,7 +246,6 @@ where
         }
     }
 
-    #[inline]
     fn insert(&mut self, index: usize) -> bool {
         let (chunk_idx, lane_idx, bit) = self.coords(index);
 
@@ -275,7 +262,6 @@ where
         true
     }
 
-    #[inline]
     fn remove(&mut self, index: usize) -> bool {
         let (chunk_idx, lane_idx, bit) = self.coords(index);
 
@@ -292,18 +278,15 @@ where
         true
     }
 
-    #[inline]
     fn contains(&self, index: usize) -> bool {
         let (chunk_idx, lane_idx, bit) = self.coords(index);
         self.get(chunk_idx, lane_idx, bit)
     }
 
-    #[inline]
-    fn iter(&self) -> Self::Iter<'_> {
+    fn iter(&self) -> impl Iterator<Item = usize> {
         SimdSetIter::new(self)
     }
 
-    #[inline]
     fn len(&self) -> usize {
         let mut n = 0;
         for chunk in &self.chunks {
@@ -314,24 +297,20 @@ where
         n as usize
     }
 
-    #[inline]
     fn union(&mut self, other: &Self) {
         self.zip_mut(other, |dst, src| *dst |= src);
     }
 
-    #[inline]
     fn intersect(&mut self, other: &Self) {
         self.zip_mut(other, |dst, src| *dst &= src);
     }
 
-    #[inline]
     fn subtract(&mut self, other: &Self) {
         let mut other = other.clone();
         other.invert();
         self.intersect(&other);
     }
 
-    #[inline]
     fn invert(&mut self) {
         for chunk in self.chunks.iter_mut() {
             for lane in chunk.as_mut_array() {
@@ -340,7 +319,6 @@ where
         }
     }
 
-    #[inline]
     fn clear(&mut self) {
         for chunk in self.chunks.iter_mut() {
             for lane in chunk.as_mut_array() {
@@ -349,7 +327,6 @@ where
         }
     }
 
-    #[inline]
     fn insert_all(&mut self) {
         for chunk in self.chunks.iter_mut() {
             for lane in chunk.as_mut_array() {
@@ -358,7 +335,6 @@ where
         }
     }
 
-    #[inline]
     fn copy_from(&mut self, other: &Self) {
         self.zip_mut(other, |dst, src| *dst = *src);
     }

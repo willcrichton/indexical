@@ -18,8 +18,6 @@ pub use rustc_index::bit_set::{ChunkedBitSet, DenseBitSet, MixedBitIter, MixedBi
 pub type RustcBitSet = MixedBitSet<usize>;
 
 impl BitSet for RustcBitSet {
-    type Iter<'a> = MixedBitIter<'a, usize>;
-
     fn empty(size: usize) -> Self {
         RustcBitSet::new_empty(size)
     }
@@ -36,11 +34,10 @@ impl BitSet for RustcBitSet {
         self.remove(index)
     }
 
-    fn iter(&self) -> Self::Iter<'_> {
+    fn iter(&self) -> impl Iterator<Item = usize> {
         self.iter()
     }
 
-    #[inline]
     fn intersect(&mut self, other: &Self) {
         self.intersect_changed(other);
     }
@@ -63,7 +60,6 @@ impl BitSet for RustcBitSet {
         self.iter().count()
     }
 
-    #[inline]
     fn union(&mut self, other: &Self) {
         self.union_changed(other);
     }
@@ -72,7 +68,6 @@ impl BitSet for RustcBitSet {
         self.union(other)
     }
 
-    #[inline]
     fn subtract(&mut self, other: &Self) {
         self.subtract_changed(other);
     }

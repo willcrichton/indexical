@@ -62,14 +62,12 @@ impl<T: IndexedValue> ToIndex<T, MarkerOwned> for T {
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerRef> for &T {
-    #[inline]
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(self)
     }
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerIndex> for T::Index {
-    #[inline]
     fn to_index(self, _domain: &IndexedDomain<T>) -> T::Index {
         self
     }
