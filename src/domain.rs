@@ -73,7 +73,9 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Adds `value` to the domain, returning its new index.
     pub fn insert(&mut self, value: T) -> T::Index {
-        self.domain.push(value)
+        let idx = self.domain.push(value.clone());
+        self.reverse_map.insert(value, idx);
+        idx
     }
 
     /// Returns immutable access to the underlying indexed vector.
