@@ -96,25 +96,26 @@ impl BitSet for RustcBitSet {
     }
 }
 
-/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation.
-pub type IndexSet<T> = crate::IndexSet<'static, T, RustcBitSet, RcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RcFamily`].
+pub type RcIndexSet<T> = crate::set::IndexSet<'static, T, RustcBitSet, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type ArcIndexSet<T> = crate::IndexSet<'static, T, RustcBitSet, ArcFamily>;
+pub type ArcIndexSet<T> = crate::set::IndexSet<'static, T, RustcBitSet, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
-pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;
+pub type RefIndexSet<'a, T> = crate::set::IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation.
-pub type IndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RustcBitSet, RcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RcFamily`].
+pub type RcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, RustcBitSet, RcFamily>;
 
 /// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
-pub type ArcIndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RustcBitSet, ArcFamily>;
+pub type ArcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, RustcBitSet, ArcFamily>;
 
 /// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
-pub type RefIndexMatrix<'a, R, C> = crate::IndexMatrix<'a, R, C, RustcBitSet, RefFamily<'a>>;
+pub type RefIndexMatrix<'a, R, C> =
+    crate::matrix::IndexMatrix<'a, R, C, RustcBitSet, RefFamily<'a>>;
 
-impl<'a, T, S, P> JoinSemiLattice for crate::IndexSet<'a, T, S, P>
+impl<'a, T, S, P> JoinSemiLattice for crate::set::IndexSet<'a, T, S, P>
 where
     T: IndexedValue + 'a,
     S: BitSet,
@@ -125,7 +126,7 @@ where
     }
 }
 
-impl<'a, R, C, S, P> JoinSemiLattice for crate::IndexMatrix<'a, R, C, S, P>
+impl<'a, R, C, S, P> JoinSemiLattice for crate::matrix::IndexMatrix<'a, R, C, S, P>
 where
     R: PartialEq + Eq + Hash + Clone,
     C: IndexedValue + 'a,
@@ -134,7 +135,7 @@ where
 {
     fn join(&mut self, other: &Self) -> bool {
         let mut changed = false;
-        for (row, col) in other.matrix.iter() {
+        for (row, col) in &other.matrix {
             changed |= self.ensure_row(row.clone()).union_changed(col);
         }
         changed

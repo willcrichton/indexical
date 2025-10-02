@@ -12,7 +12,7 @@
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
 #![cfg_attr(feature = "simd", feature(portable_simd, unchecked_shifts))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![warn(missing_docs)]
+#![warn(missing_docs, clippy::pedantic)]
 
 use self::pointer::PointerFamily;
 use index_vec::Idx;
@@ -31,9 +31,37 @@ pub mod vec;
 #[doc(hidden)]
 pub use index_vec as _index_vec;
 
+#[cfg(all(
+    feature = "bitvec",
+    not(any(feature = "rustc", feature = "simd", feature = "roaring"))
+))]
+pub use bitset::bitvec::{
+    ArcIndexMatrix, ArcIndexSet, RcIndexMatrix, RcIndexSet, RefIndexMatrix, RefIndexSet,
+};
+#[cfg(all(
+    feature = "roaring",
+    not(any(feature = "rustc", feature = "simd", feature = "bitvec"))
+))]
+pub use bitset::roaring::{
+    ArcIndexMatrix, ArcIndexSet, RcIndexMatrix, RcIndexSet, RefIndexMatrix, RefIndexSet,
+};
+#[cfg(all(
+    feature = "rustc",
+    not(any(feature = "bitvec", feature = "simd", feature = "roaring"))
+))]
+pub use bitset::rustc::{
+    ArcIndexMatrix, ArcIndexSet, RcIndexMatrix, RcIndexSet, RefIndexMatrix, RefIndexSet,
+};
+#[cfg(all(
+    feature = "simd",
+    not(any(feature = "bitvec", feature = "rustc", feature = "roaring"))
+))]
+pub use bitset::simd::{
+    ArcIndexMatrix, ArcIndexSet, RcIndexMatrix, RcIndexSet, RefIndexMatrix, RefIndexSet,
+};
+
 pub use domain::IndexedDomain;
-pub use matrix::IndexMatrix;
-pub use set::IndexSet;
+pub use vec::{ArcIndexVec, RcIndexVec, RefIndexVec};
 
 /// Coherence hack for the `ToIndex` trait.
 pub struct MarkerOwned;
@@ -48,7 +76,7 @@ pub struct MarkerIndex;
 /// Note that we cannot use the [`Into`] trait because this conversion requires
 /// the [`IndexedDomain`] as input.
 ///
-/// The `M` type parameter is a coherence hack to ensure the two blanket implementations
+/// The `M` type parameter is a coherence hack to ensure the blanket implementations
 /// do not conflict.
 pub trait ToIndex<T: IndexedValue, M> {
     /// Converts `self` to an index over `T`.

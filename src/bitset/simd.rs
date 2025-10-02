@@ -1,3 +1,5 @@
+#![allow(clippy::cast_possible_truncation)]
+
 //! A custom SIMD-accelerated bit-set.
 //!
 //! Implementation is largely derived from the `bitsvec` crate: <https://github.com/psiace/bitsvec>
@@ -44,12 +46,14 @@ pub trait SimdSetElement:
     ///
     /// # Safety
     /// `rhs < size_of::<Self>()`
+    #[must_use]
     unsafe fn unchecked_shl(self, rhs: u32) -> Self;
 
     /// Efficient bit-shift-right.
     ///
     /// # Safety
     /// `rhs < size_of::<Self>()`
+    #[must_use]
     unsafe fn unchecked_shr(self, rhs: u32) -> Self;
 
     /// The number of zeros before the first 1 bit, counting from LSB.
@@ -113,7 +117,7 @@ where
         size_of::<T>() * 8
     }
 
-    const fn coords(&self, index: usize) -> (usize, usize, u32) {
+    const fn coords(index: usize) -> (usize, usize, u32) {
         let (chunk, index) = (index / Self::chunk_size(), index % Self::chunk_size());
         let (lane, index) = (index / Self::lane_size(), index % Self::lane_size());
         (chunk, lane, index as u32)
@@ -247,7 +251,7 @@ where
     }
 
     fn insert(&mut self, index: usize) -> bool {
-        let (chunk_idx, lane_idx, bit) = self.coords(index);
+        let (chunk_idx, lane_idx, bit) = Self::coords(index);
 
         debug_assert!(chunk_idx < self.chunks.len());
         debug_assert!(lane_idx < N);
@@ -263,7 +267,7 @@ where
     }
 
     fn remove(&mut self, index: usize) -> bool {
-        let (chunk_idx, lane_idx, bit) = self.coords(index);
+        let (chunk_idx, lane_idx, bit) = Self::coords(index);
 
         debug_assert!(chunk_idx < self.chunks.len());
         debug_assert!(lane_idx < N);
@@ -279,7 +283,7 @@ where
     }
 
     fn contains(&self, index: usize) -> bool {
-        let (chunk_idx, lane_idx, bit) = self.coords(index);
+        let (chunk_idx, lane_idx, bit) = Self::coords(index);
         self.get(chunk_idx, lane_idx, bit)
     }
 
@@ -312,7 +316,7 @@ where
     }
 
     fn invert(&mut self) {
-        for chunk in self.chunks.iter_mut() {
+        for chunk in &mut self.chunks {
             for lane in chunk.as_mut_array() {
                 *lane = !*lane;
             }
@@ -320,7 +324,7 @@ where
     }
 
     fn clear(&mut self) {
-        for chunk in self.chunks.iter_mut() {
+        for chunk in &mut self.chunks {
             for lane in chunk.as_mut_array() {
                 *lane = T::ZERO;
             }
@@ -328,7 +332,7 @@ where
     }
 
     fn insert_all(&mut self) {
-        for chunk in self.chunks.iter_mut() {
+        for chunk in &mut self.chunks {
             for lane in chunk.as_mut_array() {
                 *lane = T::MAX;
             }
@@ -340,23 +344,26 @@ where
     }
 }
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation.
-pub type IndexSet<T> = crate::IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RcFamily`].
+pub type RcIndexSet<T> = crate::set::IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type ArcIndexSet<T> = crate::IndexSet<'static, T, SimdBitset<u64, 4>, ArcFamily>;
+pub type ArcIndexSet<T> = crate::set::IndexSet<'static, T, SimdBitset<u64, 4>, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
-pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;
+pub type RefIndexSet<'a, T> = crate::set::IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation.
-pub type IndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, RcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RcFamily`].
+pub type RcIndexMatrix<R, C> =
+    crate::matrix::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, RcFamily>;
 
 /// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
-pub type ArcIndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, ArcFamily>;
+pub type ArcIndexMatrix<R, C> =
+    crate::matrix::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, ArcFamily>;
 
 /// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
-pub type RefIndexMatrix<'a, R, C> = crate::IndexMatrix<'a, R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
+pub type RefIndexMatrix<'a, R, C> =
+    crate::matrix::IndexMatrix<'a, R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
 
 #[test]
 fn test_simd_bitset() {

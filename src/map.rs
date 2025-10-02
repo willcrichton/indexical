@@ -100,6 +100,11 @@ where
     pub fn is_empty(&self) -> bool {
         self.map.is_empty()
     }
+
+    /// Returns an iterator over pairs of keys and values in the map.
+    pub fn iter(&self) -> hash_map::Iter<'_, K::Index, V> {
+        self.map.iter()
+    }
 }
 
 impl<'a, K, V, P> PartialEq for SparseIndexMap<'a, K, V, P>
@@ -173,7 +178,7 @@ where
     type IntoIter = hash_map::Iter<'b, K::Index, V>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.map.iter()
+        self.iter()
     }
 }
 

@@ -11,8 +11,8 @@ Indexical provides utilities for converting between the object domain and the in
 
 ## Example
 
-```rust,no_run
-use indexical::{IndexedDomain, IndexedValue, bitset::bitvec::IndexSet};
+```rust,ignore
+use indexical::{IndexedDomain, IndexedValue, RcIndexSet};
 use std::rc::Rc;
 
 // 1. Define a custom type.
@@ -25,14 +25,14 @@ indexical::define_index_type! {
 }
 
 // 3. Create an immutable indexed domain from a collection of objects.
-// By default this is Rc-wrapped, but you can also use Arc or &-refs.
+// The domain should be wrapped in an Rc, Arc, or &-ref.
 let domain = Rc::new(IndexedDomain::from_iter([
     MyString(String::from("Hello")), MyString(String::from("world"))
 ]));
 
-// 4. Now you can make a set! Notice how you can pass either a `MyString`
+// 4. Now you can make a set. Notice how you can pass either a `MyString`
 // or a `StringIndex` to `set.insert(..)` and `set.contains(..)`.
-let mut set = IndexSet::new(&domain);
+let mut set = RcIndexSet::new(&domain);
 set.insert(MyString(String::from("Hello")));
 set.insert(StringIndex::from_usize(1));
 assert!(set.contains(&MyString(String::from("world"))));

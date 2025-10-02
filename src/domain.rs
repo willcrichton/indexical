@@ -40,6 +40,7 @@ impl<'de, T: IndexedValue + serde::Deserialize<'de>> serde::Deserialize<'de> for
 
 impl<T: IndexedValue> IndexedDomain<T> {
     /// Creates an empty domain,
+    #[must_use]
     pub fn new() -> Self {
         IndexedDomain {
             domain: IndexVec::new(),
@@ -79,16 +80,19 @@ impl<T: IndexedValue> IndexedDomain<T> {
     }
 
     /// Returns immutable access to the underlying indexed vector.
+    #[must_use]
     pub fn as_vec(&self) -> &IndexVec<T::Index, T> {
         &self.domain
     }
 
     /// Returns the number of elements in the domain.
+    #[must_use]
     pub fn len(&self) -> usize {
         self.domain.len()
     }
 
     /// Returns true if the domain is empty.
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -96,14 +100,15 @@ impl<T: IndexedValue> IndexedDomain<T> {
     /// Similar to [`IndexedDomain::index`], except it adds `value`
     /// to the domain if it does not exist yet.
     pub fn ensure(&mut self, value: &T) -> T::Index {
-        if !self.contains_value(value) {
-            self.insert(value.clone())
-        } else {
+        if self.contains_value(value) {
             self.index(value)
+        } else {
+            self.insert(value.clone())
         }
     }
 
     /// Returns an iterator over all elements of the domain.
+    #[must_use]
     pub fn iter(&self) -> impl DoubleEndedIterator<Item = &T> + ExactSizeIterator<Item = &T> {
         self.domain.iter()
     }
@@ -118,6 +123,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
     }
 
     /// Returns an iterator over all pairs of indices and elements of the domain.
+    #[must_use]
     pub fn iter_enumerated(
         &self,
     ) -> impl DoubleEndedIterator<Item = (T::Index, &T)> + ExactSizeIterator<Item = (T::Index, &T)>

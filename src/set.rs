@@ -87,7 +87,7 @@ where
 
     /// Removes every element of `other` from `self`.
     pub fn subtract(&mut self, other: &IndexSet<'a, T, S, P>) {
-        self.set.subtract(&other.set)
+        self.set.subtract(&other.set);
     }
 
     /// Removes every element of `other` from `self`, returning true if `self` changed.
@@ -97,7 +97,7 @@ where
 
     /// Removes every element of `self` not in `other`.
     pub fn intersect(&mut self, other: &IndexSet<'a, T, S, P>) {
-        self.set.intersect(&other.set)
+        self.set.intersect(&other.set);
     }
 
     /// Removes every element of `self` not in `other`, returning true if `self` changed.
@@ -107,7 +107,7 @@ where
 
     /// Adds every element of the domain to `self`.
     pub fn insert_all(&mut self) {
-        self.set.insert_all()
+        self.set.insert_all();
     }
 
     /// Removes every element from `self`.

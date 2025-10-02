@@ -1,3 +1,5 @@
+#![allow(clippy::cast_possible_truncation)]
+
 //! A bit-set based on [`RoaringBitmap`].
 //!
 //! If you want roaring's SIMD support, add `roaring-simd` to
@@ -84,23 +86,23 @@ impl BitSet for RoaringSet {
     }
 }
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation.
-pub type IndexSet<T> = crate::IndexSet<'static, T, RoaringSet, RcFamily>;
+/// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`RcFamily`].
+pub type RcIndexSet<T> = crate::set::IndexSet<'static, T, RoaringSet, RcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`ArcFamily`].
-pub type ArcIndexSet<T> = crate::IndexSet<'static, T, RoaringSet, ArcFamily>;
+pub type ArcIndexSet<T> = crate::set::IndexSet<'static, T, RoaringSet, ArcFamily>;
 
 /// [`IndexSet`](crate::IndexSet) specialized to the [`RoaringSet`] implementation with the [`RefFamily`].
-pub type RefIndexSet<'a, T> = crate::IndexSet<'a, T, RoaringSet, RefFamily<'a>>;
+pub type RefIndexSet<'a, T> = crate::set::IndexSet<'a, T, RoaringSet, RefFamily<'a>>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation.
-pub type IndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RoaringSet, RcFamily>;
+/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation with the [`RcFamily`].
+pub type RcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, RoaringSet, RcFamily>;
 
 /// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation with the [`ArcFamily`].
-pub type ArcIndexMatrix<R, C> = crate::IndexMatrix<'static, R, C, RoaringSet, ArcFamily>;
+pub type ArcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, RoaringSet, ArcFamily>;
 
 /// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`RoaringSet`] implementation with the [`RefFamily`].
-pub type RefIndexMatrix<'a, R, C> = crate::IndexMatrix<'a, R, C, RoaringSet, RefFamily<'a>>;
+pub type RefIndexMatrix<'a, R, C> = crate::matrix::IndexMatrix<'a, R, C, RoaringSet, RefFamily<'a>>;
 
 #[test]
 fn test_roaring() {

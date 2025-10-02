@@ -4,8 +4,8 @@ define_index_type! {
   pub struct StrIdx for String = u32;
 }
 
-pub type TestIndexSet<T> = crate::bitset::bitvec::IndexSet<T>;
-pub type TestIndexMatrix<R, C> = crate::bitset::bitvec::IndexMatrix<R, C>;
+pub type TestIndexSet<T> = crate::bitset::bitvec::RcIndexSet<T>;
+pub type TestIndexMatrix<R, C> = crate::bitset::bitvec::RcIndexMatrix<R, C>;
 
 pub fn impl_test<T: BitSet>() {
     let mut bv = T::empty(10);

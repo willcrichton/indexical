@@ -84,8 +84,10 @@ where
         &mut self.vec
     }
 
-    /// Returns multiple mutable references to disjoint indices,
-    /// or a [`GetDisjointMutError`] if not disjoint or in-bounds.
+    /// Returns multiple mutable references to disjoint indices.
+    ///
+    /// # Errors
+    /// Returns [`GetDisjointMutError`] if not disjoint or in-bounds.    
     pub fn get_disjoint_mut<const N: usize>(
         &mut self,
         indices: [K::Index; N],

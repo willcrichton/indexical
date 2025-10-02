@@ -1,8 +1,10 @@
+#![allow(clippy::needless_pass_by_value)]
+
 use rustc_hash::FxHashMap;
 use std::{fmt, hash::Hash};
 
 use crate::{
-    IndexSet, IndexedDomain, IndexedValue, ToIndex, bitset::BitSet, pointer::PointerFamily,
+    IndexedDomain, IndexedValue, ToIndex, bitset::BitSet, pointer::PointerFamily, set::IndexSet,
 };
 
 /// An unordered collections of pairs `(R, C)`, implemented with a sparse bit-matrix.
@@ -68,7 +70,7 @@ where
 
     /// Returns an iterator over the elements in `row`.
     pub fn row(&self, row: &R) -> impl Iterator<Item = &C> {
-        self.matrix.get(row).into_iter().flat_map(|set| set.iter())
+        self.matrix.get(row).into_iter().flat_map(IndexSet::iter)
     }
 
     /// Returns an iterator over all rows in the matrix.
@@ -162,12 +164,12 @@ where
             col.clear();
         }
 
-        for (row, col) in source.matrix.iter() {
+        for (row, col) in &source.matrix {
             self.ensure_row(row.clone()).clone_from(col);
         }
 
-        self.empty_set = source.empty_set.clone();
-        self.col_domain = source.col_domain.clone();
+        self.empty_set.clone_from(&source.empty_set);
+        self.col_domain.clone_from(&source.col_domain);
     }
 }
 
