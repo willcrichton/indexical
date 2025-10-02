@@ -344,24 +344,24 @@ where
     }
 }
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RcFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RcFamily`].
 pub type RcIndexSet<T> = crate::set::IndexSet<'static, T, SimdBitset<u64, 4>, RcFamily>;
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
 pub type ArcIndexSet<T> = crate::set::IndexSet<'static, T, SimdBitset<u64, 4>, ArcFamily>;
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::set::IndexSet<'a, T, SimdBitset<u64, 4>, RefFamily<'a>>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RcFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RcFamily`].
 pub type RcIndexMatrix<R, C> =
     crate::matrix::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, RcFamily>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`ArcFamily`].
 pub type ArcIndexMatrix<R, C> =
     crate::matrix::IndexMatrix<'static, R, C, SimdBitset<u64, 4>, ArcFamily>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the [`SimdBitset`] implementation with the [`RefFamily`].
 pub type RefIndexMatrix<'a, R, C> =
     crate::matrix::IndexMatrix<'a, R, C, SimdBitset<u64, 4>, RefFamily<'a>>;
 

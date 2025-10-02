@@ -74,22 +74,22 @@ impl BitSet for BitVec {
     }
 }
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`BitVec`] implementation with the [`RcFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the [`BitVec`] implementation with the [`RcFamily`].
 pub type RcIndexSet<T> = crate::set::IndexSet<'static, T, BitVec, RcFamily>;
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`BitVec`] implementation with the [`ArcFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the [`BitVec`] implementation with the [`ArcFamily`].
 pub type ArcIndexSet<T> = crate::set::IndexSet<'static, T, BitVec, ArcFamily>;
 
-/// [`IndexSet`](crate::IndexSet) specialized to the [`BitVec`] implementation with the [`RefFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the [`BitVec`] implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::set::IndexSet<'a, T, BitVec, RefFamily<'a>>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`BitVec`] implementation with the [`RcFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the [`BitVec`] implementation with the [`RcFamily`].
 pub type RcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, BitVec, RcFamily>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`BitVec`] implementation with the [`ArcFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the [`BitVec`] implementation with the [`ArcFamily`].
 pub type ArcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, BitVec, ArcFamily>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the [`BitVec`] implementation with the [`RefFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the [`BitVec`] implementation with the [`RefFamily`].
 pub type RefIndexMatrix<'a, R, C> = crate::matrix::IndexMatrix<'a, R, C, BitVec, RefFamily<'a>>;
 
 #[test]

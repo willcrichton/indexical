@@ -1,3 +1,5 @@
+//! An unordered collections of pairs `(R, C)`, implemented with a sparse bit-matrix.
+
 #![allow(clippy::needless_pass_by_value)]
 
 use rustc_hash::FxHashMap;

@@ -1,3 +1,5 @@
+//! An unordered collections of `T`s, implemented with a bit-set.
+
 use std::fmt;
 
 use index_vec::Idx;

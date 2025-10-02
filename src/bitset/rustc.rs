@@ -96,22 +96,22 @@ impl BitSet for RustcBitSet {
     }
 }
 
-/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RcFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RcFamily`].
 pub type RcIndexSet<T> = crate::set::IndexSet<'static, T, RustcBitSet, RcFamily>;
 
-/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
 pub type ArcIndexSet<T> = crate::set::IndexSet<'static, T, RustcBitSet, ArcFamily>;
 
-/// [`IndexSet`](crate::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
+/// [`IndexSet`](crate::set::IndexSet) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
 pub type RefIndexSet<'a, T> = crate::set::IndexSet<'a, T, RustcBitSet, RefFamily<'a>>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RcFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RcFamily`].
 pub type RcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, RustcBitSet, RcFamily>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`ArcFamily`].
 pub type ArcIndexMatrix<R, C> = crate::matrix::IndexMatrix<'static, R, C, RustcBitSet, ArcFamily>;
 
-/// [`IndexMatrix`](crate::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
+/// [`IndexMatrix`](crate::matrix::IndexMatrix) specialized to the `bit_set::BitSet` implementation with the [`RefFamily`].
 pub type RefIndexMatrix<'a, R, C> =
     crate::matrix::IndexMatrix<'a, R, C, RustcBitSet, RefFamily<'a>>;
 

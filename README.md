@@ -11,7 +11,7 @@ Indexical provides utilities for converting between the object domain and the in
 
 ## Example
 
-```rust,ignore
+```rust,no_run
 use indexical::{IndexedDomain, IndexedValue, RcIndexSet};
 use std::rc::Rc;
 
