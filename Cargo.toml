@@ -1,6 +1,6 @@
 [package]
 name = "indexical"
-version = "0.10.0"
+version = "0.10.1"
 edition = "2024"
 description = "Utilities for indexed collections"
 authors = [
@@ -11,9 +11,6 @@ repository = "https://github.com/willcrichton/indexical"
 
 [package.metadata.rust-analyzer]
 rustc_private = true
-
-[package.metadata.docs.rs]
-rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 rustc = []

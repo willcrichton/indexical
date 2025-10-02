@@ -11,7 +11,6 @@
 
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
 #![cfg_attr(feature = "simd", feature(portable_simd, unchecked_shifts))]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, clippy::pedantic)]
 
 use self::pointer::PointerFamily;
