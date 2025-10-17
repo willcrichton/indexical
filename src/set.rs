@@ -1,6 +1,6 @@
 //! An unordered collections of `T`s, implemented with a bit-set.
 
-use std::fmt;
+use std::{borrow::Borrow, fmt};
 
 use index_vec::Idx;
 
@@ -189,6 +189,35 @@ where
         }
         set
     }
+}
+
+/// Iterator extension trait for [`IndexSet`].
+pub trait IndexSetIteratorExt<
+    'a,
+    T: IndexedValue + 'a,
+    S: BitSet,
+    P: PointerFamily<'a>,
+    U: Borrow<IndexSet<'a, T, S, P>>,
+>: Iterator<Item = U> + Sized
+{
+    /// Returns the union of the input index sets.
+    fn union_indexical(self, domain: &P::Pointer<IndexedDomain<T>>) -> IndexSet<'a, T, S, P> {
+        let mut set = IndexSet::new(domain);
+        for other in self {
+            set.union(other.borrow());
+        }
+        set
+    }
+}
+
+impl<'a, I, T, S, P, U> IndexSetIteratorExt<'a, T, S, P, U> for I
+where
+    T: IndexedValue + 'a,
+    S: BitSet,
+    P: PointerFamily<'a>,
+    U: Borrow<IndexSet<'a, T, S, P>>,
+    I: Iterator<Item = U> + Sized,
+{
 }
 
 #[cfg(test)]
