@@ -14,16 +14,22 @@ impl BitSet for BitVec {
         bitvec::bitvec![usize, Lsb0; 0; size]
     }
 
+    /// # Panics
+    /// Panics if `index` is out of range.
     fn contains(&self, index: usize) -> bool {
         self[index]
     }
 
+    /// # Panics
+    /// Panics if `index` is out of range.
     fn insert(&mut self, index: usize) -> bool {
         let contained = self[index];
         self.set(index, true);
         !contained
     }
 
+    /// # Panics
+    /// Panics if `index` is out of range.
     fn remove(&mut self, index: usize) -> bool {
         let contained = self[index];
         self.set(index, false);
@@ -69,6 +75,8 @@ impl BitSet for BitVec {
         self.fill(true);
     }
 
+    /// # Panics
+    /// Panics if `self` is not the same length as `other`.
     fn copy_from(&mut self, other: &Self) {
         self.copy_from_bitslice(other);
     }

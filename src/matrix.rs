@@ -42,8 +42,10 @@ where
     }
 
     /// Inserts a pair `(row, col)` into the matrix, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `col` is not in `self.col_domain`.
     pub fn insert<M>(&mut self, row: R, col: impl ToIndex<C, M>) -> bool {
-        let col = col.to_index(&self.col_domain);
         self.ensure_row(row).insert(col)
     }
 
@@ -61,7 +63,8 @@ where
         self.ensure_row(from.clone());
         self.ensure_row(to.clone());
 
-        // SAFETY: `from` != `to` therefore this is a disjoint mutable borrow
+        /// SAFETY: `from` != `to` therefore this is a disjoint mutable borrow
+        /// PANICS: unreachable
         let [Some(from), Some(to)] =
             (unsafe { self.matrix.get_disjoint_unchecked_mut([&from, &to]) })
         else {
@@ -107,6 +110,9 @@ where
     // C = Allocation
 
     /// Transposes the matrix, assuming the row type is also indexed.
+    ///
+    /// # Panics
+    /// Panics if `self.rows()` are not all contained in `row_domain`.
     pub fn transpose<T, M>(
         &self,
         row_domain: &P::Pointer<IndexedDomain<T>>,
@@ -183,6 +189,7 @@ where
     P: PointerFamily<'a>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        /// PANICS: `entries` should not trigger the panic condition for `finish`
         f.debug_map().entries(self.rows()).finish()
     }
 }

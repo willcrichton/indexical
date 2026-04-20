@@ -12,6 +12,9 @@
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
 #![cfg_attr(feature = "simd", feature(portable_simd, unchecked_shifts))]
 #![warn(missing_docs, clippy::pedantic)]
+// #![sniff_tool::check_unsafe_pub]
+// #![sniff_tool::check_panics_pub]
+#![allow(unused_doc_comments, clippy::doc_markdown)]
 
 use self::pointer::PointerFamily;
 use index_vec::Idx;
@@ -79,16 +82,23 @@ pub struct MarkerIndex;
 /// do not conflict.
 pub trait ToIndex<T: IndexedValue, M> {
     /// Converts `self` to an index over `T`.
+    ///
+    /// # Panics
+    /// Panics `self` is not in the `domain`.
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index;
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerOwned> for T {
+    /// # Panics
+    /// Panics `self` is not in the `domain`.
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(&self)
     }
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerRef> for &T {
+    /// # Panics
+    /// Panics `self` is not in the `domain`.    
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
         domain.index(self)
     }

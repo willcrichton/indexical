@@ -50,6 +50,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Gets the object corresponding to `index`.
     ///
+    /// # Panics
     /// Panics if `index` is not within the domain.
     pub fn value(&self, index: T::Index) -> &T {
         &self.domain[index]
@@ -57,6 +58,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Gets the index corresponding to `value`.
     ///
+    /// # Panics
     /// Panics if `value` is not within the domain.
     pub fn index(&self, value: &T) -> T::Index {
         self.reverse_map[value]
@@ -101,6 +103,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
     /// to the domain if it does not exist yet.
     pub fn ensure(&mut self, value: &T) -> T::Index {
         if self.contains_value(value) {
+            /// PANICS: contains_value = true => value in domain
             self.index(value)
         } else {
             self.insert(value.clone())

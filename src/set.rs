@@ -36,15 +36,24 @@ where
 
     /// Returns an iterator over all the objects contained in `self`.
     pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.indices().map(move |idx| self.domain.value(idx))
+        self.indices().map(move |idx| {
+            /// PANICS: idx guaranteed to be from self.domain
+            self.domain.value(idx)
+        })
     }
 
     /// Returns an iterator over the pairs of indices and objects contained in `self`.
     pub fn iter_enumerated(&self) -> impl Iterator<Item = (T::Index, &T)> {
-        self.indices().map(move |idx| (idx, self.domain.value(idx)))
+        self.indices().map(move |idx| {
+            /// PANICS: idx guaranteed to be from self.domain
+            (idx, self.domain.value(idx))
+        })
     }
 
     /// Returns true if `index` is contained in `self`.
+    ///
+    /// # Panics
+    /// Panics if `index` is not in `self.domain`.
     pub fn contains<M>(&self, index: impl ToIndex<T, M>) -> bool {
         let elem = index.to_index(&self.domain);
         self.set.contains(elem.index())
@@ -66,12 +75,18 @@ where
     }
 
     /// Adds the element `elt` to `self`, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `elt` is not in `self.domain`.
     pub fn insert<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.insert(elt.index())
     }
 
     /// Removes the element `elt` from `self`, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `elt` is not in `self.domain`.
     pub fn remove<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.remove(elt.index())
@@ -167,7 +182,13 @@ where
     }
 
     fn clone_from(&mut self, source: &Self) {
-        self.set.copy_from(&source.set);
+        if self.domain.len() == source.domain.len() {
+            /// PANICS: domains must be same size
+            self.set.copy_from(&source.set);
+        } else {
+            self.set = source.set.clone();
+        }
+
         self.domain = source.domain.clone();
     }
 }
@@ -179,6 +200,8 @@ where
     P: PointerFamily<'a>,
     U: ToIndex<T, M>,
 {
+    /// # Panics
+    /// Panics if any item in `iter` is not in `domain`.
     fn from_indexical_iter(
         iter: impl Iterator<Item = U>,
         domain: &P::Pointer<IndexedDomain<T>>,

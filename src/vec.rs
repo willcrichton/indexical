@@ -49,17 +49,21 @@ where
     }
 
     /// Returns an immutable reference to a value for a given index.
+    ///
+    /// # Panics
+    /// Panics if `idx` is not in `self.domain`.
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> &V {
         let idx = idx.to_index(&self.domain);
-        debug_assert!(self.domain.contains_index(idx));
-        unsafe { self.vec.get_unchecked(idx.index()) }
+        self.vec.get(idx.index()).unwrap()
     }
 
     /// Returns a mutable reference to a value for a given index.
+    ///
+    /// # Panics
+    /// Panics if `idx` is not in `self.domain`.
     pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
         let idx = idx.to_index(&self.domain);
-        debug_assert!(self.domain.contains_index(idx));
-        unsafe { self.vec.get_unchecked_mut(idx.index()) }
+        self.vec.get_mut(idx.index()).unwrap()
     }
 
     /// Returns an iterator over immutable references to the values.
@@ -87,7 +91,7 @@ where
     /// Returns multiple mutable references to disjoint indices.
     ///
     /// # Errors
-    /// Returns [`GetDisjointMutError`] if not disjoint or in-bounds.    
+    /// Returns [`GetDisjointMutError`] if not disjoint or in-bounds.
     pub fn get_disjoint_mut<const N: usize>(
         &mut self,
         indices: [K::Index; N],
@@ -140,6 +144,8 @@ where
 {
     type Output = V;
 
+    /// # Panics
+    /// Panics if `index` is not in range.
     fn index(&self, index: K::Index) -> &Self::Output {
         self.get(index)
     }
@@ -150,6 +156,8 @@ where
     K: IndexedValue + 'a,
     P: PointerFamily<'a>,
 {
+    /// # Panics
+    /// Panics if `index` is not in range.
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index)
     }

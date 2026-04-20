@@ -45,18 +45,27 @@ where
     }
 
     /// Returns an immutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn get<M>(&self, key: impl ToIndex<K, M>) -> Option<&V> {
         let idx = key.to_index(&self.domain);
         self.map.get(&idx)
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn get_mut<M>(&mut self, key: impl ToIndex<K, M>) -> Option<&mut V> {
         let idx = key.to_index(&self.domain);
         self.map.get_mut(&idx)
     }
 
     /// Returns a reference to a value for a given key.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
@@ -67,6 +76,9 @@ where
 
     /// Returns a mutable reference to a value for a given key.
     ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
+    ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
     pub unsafe fn get_unchecked_mut<M>(&mut self, key: impl ToIndex<K, M>) -> &mut V {
@@ -75,6 +87,9 @@ where
     }
 
     /// Inserts the key/value pair into `self`.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn insert<M>(&mut self, key: impl ToIndex<K, M>, value: V) {
         let idx = key.to_index(&self.domain);
         self.map.insert(idx, value);
@@ -86,6 +101,9 @@ where
     }
 
     /// Returns a mutable entry into the map for the given key.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn entry<M>(&mut self, key: impl ToIndex<K, M>) -> hash_map::Entry<'_, K::Index, V> {
         let idx = key.to_index(&self.domain);
         self.map.entry(idx)
@@ -133,6 +151,8 @@ where
 {
     type Output = V;
 
+    /// # Panics
+    /// Panics if index is out of bounds.
     fn index(&self, index: K::Index) -> &Self::Output {
         self.get(index).unwrap()
     }
@@ -143,6 +163,8 @@ where
     K: IndexedValue + 'a,
     P: PointerFamily<'a>,
 {
+    /// # Panics
+    /// Panics if index is out of bounds.
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index).unwrap()
     }
@@ -154,6 +176,8 @@ where
     P: PointerFamily<'a>,
     U: ToIndex<K, M>,
 {
+    /// # Panics
+    /// Panics the keys produced by `iter` are not in `domain`.
     fn from_indexical_iter(
         iter: impl Iterator<Item = (U, V)>,
         domain: &P::Pointer<IndexedDomain<K>>,
@@ -210,16 +234,25 @@ where
     }
 
     /// Returns an immutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> Option<&V> {
         self.0.get(idx).as_ref()
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> Option<&mut V> {
         self.0.get_mut(idx).as_mut()
     }
 
     /// Returns a reference to a value for a given key.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
@@ -229,6 +262,9 @@ where
 
     /// Returns a mutable reference to a value for a given key.
     ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
+    ///
     /// # Safety
     /// This function has undefined behavior if `key` is not in `self`.
     pub unsafe fn get_unchecked_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
@@ -236,6 +272,9 @@ where
     }
 
     /// Inserts the key/value pair into `self`.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in `self.domain`.
     pub fn insert<M>(&mut self, idx: impl ToIndex<K, M>, value: V) {
         let idx = idx.to_index(&self.0.domain);
         self.0[idx] = Some(value);
@@ -254,6 +293,8 @@ where
 {
     type Output = V;
 
+    /// # Panics
+    /// Panics if index is out of bounds.
     fn index(&self, index: K::Index) -> &Self::Output {
         self.get(index).unwrap()
     }
@@ -264,6 +305,8 @@ where
     K: IndexedValue + 'a,
     P: PointerFamily<'a>,
 {
+    /// # Panics
+    /// Panics if index is out of bounds.
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
         self.get_mut(index).unwrap()
     }
@@ -275,6 +318,8 @@ where
     P: PointerFamily<'a>,
     U: ToIndex<K, M>,
 {
+    /// # Panics
+    /// Panics if any key produced by `iter` is not in `domain`.
     fn from_indexical_iter(
         iter: impl Iterator<Item = (U, V)>,
         domain: &P::Pointer<IndexedDomain<K>>,
