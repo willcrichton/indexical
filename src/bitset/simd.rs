@@ -17,7 +17,7 @@ use crate::{
 use std::{
     mem::size_of,
     ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXorAssign, Not},
-    simd::{LaneCount, Simd, SimdElement, SupportedLaneCount},
+    simd::{Simd, SimdElement},
     slice,
 };
 
@@ -99,16 +99,12 @@ simd_set_element_impl!(u64);
 pub struct SimdBitset<T, const N: usize>
 where
     T: SimdSetElement,
-    LaneCount<N>: SupportedLaneCount,
 {
     chunks: Vec<Simd<T, N>>,
     nbits: usize,
 }
 
-impl<T: SimdSetElement, const N: usize> SimdBitset<T, N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
+impl<T: SimdSetElement, const N: usize> SimdBitset<T, N> {
     const fn chunk_size() -> usize {
         Self::lane_size() * N
     }
@@ -157,7 +153,6 @@ where
 pub struct SimdSetIter<'a, T, const N: usize>
 where
     T: SimdSetElement,
-    LaneCount<N>: SupportedLaneCount,
 {
     set: &'a SimdBitset<T, N>,
     index: usize,
@@ -168,7 +163,6 @@ where
 impl<'a, T, const N: usize> SimdSetIter<'a, T, N>
 where
     T: SimdSetElement,
-    LaneCount<N>: SupportedLaneCount,
 {
     fn new(set: &'a SimdBitset<T, N>) -> Self {
         let mut chunk_iter = set.chunks.iter();
@@ -189,7 +183,6 @@ where
 impl<T, const N: usize> Iterator for SimdSetIter<'_, T, N>
 where
     T: SimdSetElement,
-    LaneCount<N>: SupportedLaneCount,
 {
     type Item = usize;
 
@@ -209,18 +202,14 @@ where
                     self.lane = *lane;
                 }
                 None => loop {
-                    match self.chunk_iter.next() {
-                        Some(chunk) => {
-                            if *chunk == zero_simd {
-                                self.index += chunk_size;
-                                continue;
-                            }
-                            self.lane_iter = chunk.as_array().iter();
-                            self.lane = *self.lane_iter.next().unwrap();
-                            break;
-                        }
-                        None => return None,
+                    let chunk = self.chunk_iter.next()?;
+                    if *chunk == zero_simd {
+                        self.index += chunk_size;
+                        continue;
                     }
+                    self.lane_iter = chunk.as_array().iter();
+                    self.lane = *self.lane_iter.next().unwrap();
+                    break;
                 },
             }
         }
@@ -238,7 +227,6 @@ where
 
 impl<T: SimdSetElement, const N: usize> BitSet for SimdBitset<T, N>
 where
-    LaneCount<N>: SupportedLaneCount,
     Simd<T, N>: for<'a> BitOr<&'a Simd<T, N>, Output = Simd<T, N>>,
     Simd<T, N>: for<'a> BitAnd<&'a Simd<T, N>, Output = Simd<T, N>>,
 {
