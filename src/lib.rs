@@ -10,7 +10,7 @@
 //!    You can choose to use the [`ArcFamily`](pointer::ArcFamily) if you need concurrency, or the [`RefFamily`](pointer::RefFamily) if you want to avoid reference-counting.
 
 #![cfg_attr(feature = "rustc", feature(rustc_private))]
-#![cfg_attr(feature = "simd", feature(portable_simd, unchecked_shifts))]
+#![cfg_attr(feature = "simd", feature(portable_simd))]
 #![warn(missing_docs, clippy::pedantic)]
 
 use self::pointer::PointerFamily;

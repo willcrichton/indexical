@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:  
-  NIGHTLY: nightly-2025-03-02
+  NIGHTLY: nightly-2026-05-01
 
 jobs:
   tests:
