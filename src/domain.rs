@@ -50,6 +50,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Gets the object corresponding to `index`.
     ///
+    /// # Panics
     /// Panics if `index` is not within the domain.
     pub fn value(&self, index: T::Index) -> &T {
         &self.domain[index]
@@ -57,6 +58,7 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Gets the index corresponding to `value`.
     ///
+    /// # Panics
     /// Panics if `value` is not within the domain.
     pub fn index(&self, value: &T) -> T::Index {
         self.reverse_map[value]
@@ -73,7 +75,11 @@ impl<T: IndexedValue> IndexedDomain<T> {
     }
 
     /// Adds `value` to the domain, returning its new index.
+    ///
+    /// # Panics
+    /// Panics if domain size exceeds `isize::MAX` bytes.
     pub fn insert(&mut self, value: T) -> T::Index {
+        // PANIC: ensured by caller.
         let idx = self.domain.push(value.clone());
         self.reverse_map.insert(value, idx);
         idx
@@ -99,10 +105,14 @@ impl<T: IndexedValue> IndexedDomain<T> {
 
     /// Similar to [`IndexedDomain::index`], except it adds `value`
     /// to the domain if it does not exist yet.
+    ///
+    /// # Panic
+    /// Panics if this requires an insertion and the domain size exceeds `isize::MAX` bytes.
     pub fn ensure(&mut self, value: &T) -> T::Index {
         if self.contains_value(value) {
             self.index(value)
         } else {
+            // PANIC: ensured by caller.
             self.insert(value.clone())
         }
     }
@@ -123,6 +133,9 @@ impl<T: IndexedValue> IndexedDomain<T> {
     }
 
     /// Returns an iterator over all pairs of indices and elements of the domain.
+    ///
+    /// # Panic
+    /// The iterator panics if the size of the domain is greater than `usize::MAX`.
     #[must_use]
     pub fn iter_enumerated(
         &self,
@@ -145,6 +158,7 @@ impl<T: IndexedValue> From<IndexVec<T::Index, T>> for IndexedDomain<T> {
     /// an [`IndexVec`] object.
     fn from(domain: IndexVec<T::Index, T>) -> Self {
         let reverse_map = domain
+            // PANIC: domain must be of size < usize::MAX
             .iter_enumerated()
             .map(|(idx, value)| (value.clone(), idx))
             .collect();

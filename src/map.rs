@@ -45,12 +45,18 @@ where
     }
 
     /// Returns an immutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in domain.
     pub fn get<M>(&self, key: impl ToIndex<K, M>) -> Option<&V> {
         let idx = key.to_index(&self.domain);
         self.map.get(&idx)
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in domain.
     pub fn get_mut<M>(&mut self, key: impl ToIndex<K, M>) -> Option<&mut V> {
         let idx = key.to_index(&self.domain);
         self.map.get_mut(&idx)
@@ -58,23 +64,34 @@ where
 
     /// Returns a reference to a value for a given key.
     ///
+    /// # Panics
+    /// Panics if `key` is not in domain.
+    ///
     /// # Safety
-    /// This function has undefined behavior if `key` is not in `self`.
+    /// `key` must be in `self`, or else this returns an invalid pointer.
     pub unsafe fn get_unchecked<M>(&self, key: impl ToIndex<K, M>) -> &V {
         let idx = key.to_index(&self.domain);
+        // SAFETY: ensured by caller.
         unsafe { self.map.get(&idx).unwrap_unchecked() }
     }
 
     /// Returns a mutable reference to a value for a given key.
     ///
+    /// # Panics
+    /// Panics if `key` is not in domain.
+    ///
     /// # Safety
-    /// This function has undefined behavior if `key` is not in `self`.
+    /// `key` must be in `self`, or else this returns an invalid pointer.
     pub unsafe fn get_unchecked_mut<M>(&mut self, key: impl ToIndex<K, M>) -> &mut V {
         let idx = key.to_index(&self.domain);
+        // SAFETY: ensured by caller.
         unsafe { self.map.get_mut(&idx).unwrap_unchecked() }
     }
 
     /// Inserts the key/value pair into `self`.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in domain.
     pub fn insert<M>(&mut self, key: impl ToIndex<K, M>, value: V) {
         let idx = key.to_index(&self.domain);
         self.map.insert(idx, value);
@@ -86,6 +103,9 @@ where
     }
 
     /// Returns a mutable entry into the map for the given key.
+    ///
+    /// # Panics
+    /// Panics if `key` is not in domain.
     pub fn entry<M>(&mut self, key: impl ToIndex<K, M>) -> hash_map::Entry<'_, K::Index, V> {
         let idx = key.to_index(&self.domain);
         self.map.entry(idx)
@@ -134,7 +154,10 @@ where
     type Output = V;
 
     fn index(&self, index: K::Index) -> &Self::Output {
-        self.get(index).unwrap()
+        // PANIC: `index` is already an index
+        let opt = self.get(index);
+        // PANIC: ensured by caller
+        opt.unwrap()
     }
 }
 
@@ -144,7 +167,10 @@ where
     P: PointerFamily<'a>,
 {
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
-        self.get_mut(index).unwrap()
+        // PANIC: `index` is already an index
+        let opt = self.get_mut(index);
+        // PANIC: ensured by caller
+        opt.unwrap()
     }
 }
 
@@ -209,36 +235,81 @@ where
         Self(IndexVec::from_fn(|_| None, domain))
     }
 
+    /// Returns a reference to the slot for a value for a given key.
+    ///
+    /// # Safety
+    /// `idx` must be in domain.
+    #[allow(clippy::ref_option)]
+    unsafe fn get_slot_unchecked(&self, idx: K::Index) -> &Option<V> {
+        // SAFETY: ensured by caller
+        unsafe { self.0.get_unchecked(idx) }
+    }
+
+    /// Returns a mutable reference to the slot for a value for a given key.
+    ///
+    /// # Safety
+    /// `idx` must be in domain.
+    unsafe fn get_slot_unchecked_mut(&mut self, idx: K::Index) -> &mut Option<V> {
+        // SAFETY: ensured by caller
+        unsafe { self.0.get_unchecked_mut(idx) }
+    }
+
     /// Returns an immutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `idx` is not in domain.
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> Option<&V> {
-        self.0.get(idx).as_ref()
+        let idx = idx.to_index(&self.0.domain);
+        // SAFETY: `to_index` ensures `idx` is in bounds.
+        let opt = unsafe { self.get_slot_unchecked(idx) };
+        opt.as_ref()
     }
 
     /// Returns a mutable reference to a value for a given key if it exists.
+    ///
+    /// # Panics
+    /// Panics if `idx` is not in domain.
     pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> Option<&mut V> {
-        self.0.get_mut(idx).as_mut()
+        let idx = idx.to_index(&self.0.domain);
+        // SAFETY: `to_index` ensures `idx` is in bounds.
+        let opt = unsafe { self.get_slot_unchecked_mut(idx) };
+        opt.as_mut()
     }
 
     /// Returns a reference to a value for a given key.
     ///
     /// # Safety
-    /// This function has undefined behavior if `key` is not in `self`.
-    pub unsafe fn get_unchecked<M>(&self, idx: impl ToIndex<K, M>) -> &V {
-        unsafe { self.get(idx).unwrap_unchecked() }
+    /// - domain: `idx` must be in domain
+    /// - slot: `idx` slot must be `Some`
+    pub unsafe fn get_unchecked<M>(&self, idx: K::Index) -> &V {
+        // SAFETY: ensured by caller.
+        let slot = unsafe { self.get_slot_unchecked(idx) };
+        // SAFETY: ensured by caller.
+        unsafe { slot.as_ref().unwrap_unchecked() }
     }
 
     /// Returns a mutable reference to a value for a given key.
     ///
     /// # Safety
-    /// This function has undefined behavior if `key` is not in `self`.
-    pub unsafe fn get_unchecked_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
-        unsafe { self.get_mut(idx).unwrap_unchecked() }
+    /// - domain: `idx` must be in domain
+    /// - slot: `idx` slot must be `Some`
+    pub unsafe fn get_unchecked_mut<M>(&mut self, idx: K::Index) -> &mut V {
+        // SAFETY: ensured by caller.
+        let slot = unsafe { self.get_slot_unchecked_mut(idx) };
+        // SAFETY: ensured by caller.
+        unsafe { slot.as_mut().unwrap_unchecked() }
     }
 
     /// Inserts the key/value pair into `self`.
+    ///
+    /// # Panic
+    /// Panics if `idx` is out of bounds for the domain.
     pub fn insert<M>(&mut self, idx: impl ToIndex<K, M>, value: V) {
         let idx = idx.to_index(&self.0.domain);
-        self.0[idx] = Some(value);
+        // SAFETY: `to_index` ensures `idx` is in bounds.
+        unsafe {
+            *self.get_slot_unchecked_mut(idx) = Some(value);
+        }
     }
 
     /// Returns an iterator over the values of the map.
@@ -255,7 +326,10 @@ where
     type Output = V;
 
     fn index(&self, index: K::Index) -> &Self::Output {
-        self.get(index).unwrap()
+        // PANIC: `index` is already an index
+        let opt = self.get(index);
+        // PANIC: ensured by caller
+        opt.unwrap()
     }
 }
 
@@ -265,7 +339,10 @@ where
     P: PointerFamily<'a>,
 {
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
-        self.get_mut(index).unwrap()
+        // PANIC: `index` is already an index
+        let opt = self.get_mut(index);
+        // PANIC: ensured by caller
+        opt.unwrap()
     }
 }
 
@@ -281,6 +358,7 @@ where
     ) -> Self {
         let mut map = DenseIndexMap::new(domain);
         for (u, v) in iter {
+            // PANIC: ensured by caller
             map.insert(u, v);
         }
         map

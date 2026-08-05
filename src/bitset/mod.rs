@@ -9,12 +9,21 @@ pub trait BitSet: Clone + PartialEq {
     fn empty(size: usize) -> Self;
 
     /// Sets `index` to 1, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `index` is out of bounds.
     fn insert(&mut self, index: usize) -> bool;
 
     /// Sets `index` to 0, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `index` is out of bounds.
     fn remove(&mut self, index: usize) -> bool;
 
     /// Returns true if `index` is 1.
+    ///
+    /// # Panics
+    /// Panics if `index` is out of bounds.
     fn contains(&self, index: usize) -> bool;
 
     /// Returns an iterator over all the indices of ones in the bit-set.
@@ -80,7 +89,10 @@ pub trait BitSet: Clone + PartialEq {
         orig_len == self_copy.len()
     }
 
-    /// Copies `other` into `self`. Must have the same lengths.
+    /// Copies `other` into `self`.
+    ///
+    /// # Panics
+    /// Panics if `self` and `other` have different lengths.
     fn copy_from(&mut self, other: &Self);
 }
 

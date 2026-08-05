@@ -45,6 +45,9 @@ where
     }
 
     /// Returns true if `index` is contained in `self`.
+    ///
+    /// # Panics
+    /// Panics if `index` is out of bounds.
     pub fn contains<M>(&self, index: impl ToIndex<T, M>) -> bool {
         let elem = index.to_index(&self.domain);
         self.set.contains(elem.index())
@@ -66,12 +69,18 @@ where
     }
 
     /// Adds the element `elt` to `self`, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `elt` is out of bounds.
     pub fn insert<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.insert(elt.index())
     }
 
     /// Removes the element `elt` from `self`, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `elt` is out of bounds.
     pub fn remove<M>(&mut self, elt: impl ToIndex<T, M>) -> bool {
         let elt = elt.to_index(&self.domain);
         self.set.remove(elt.index())
@@ -166,7 +175,10 @@ where
         }
     }
 
+    /// # Panic
+    /// Panics if `self` and `source` have different lengths.
     fn clone_from(&mut self, source: &Self) {
+        // PANIC: ensured by caller.
         self.set.copy_from(&source.set);
         self.domain = source.domain.clone();
     }
@@ -185,6 +197,7 @@ where
     ) -> Self {
         let mut set = IndexSet::new(domain);
         for s in iter {
+            // PANIC: ensured by caller.
             set.insert(s);
         }
         set

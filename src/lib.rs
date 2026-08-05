@@ -79,23 +79,31 @@ pub struct MarkerIndex;
 /// do not conflict.
 pub trait ToIndex<T: IndexedValue, M> {
     /// Converts `self` to an index over `T`.
+    ///
+    /// # Panics
+    /// Panics if `self` is not within the domain.
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index;
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerOwned> for T {
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
+        // PANIC: ensured by caller
         domain.index(&self)
     }
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerRef> for &T {
     fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
+        // PANIC: ensured by caller
         domain.index(self)
     }
 }
 
 impl<T: IndexedValue> ToIndex<T, MarkerIndex> for T::Index {
-    fn to_index(self, _domain: &IndexedDomain<T>) -> T::Index {
+    #[inline]
+    fn to_index(self, domain: &IndexedDomain<T>) -> T::Index {
+        // PANIC: ensured by caller
+        assert!(domain.contains_index(self));
         self
     }
 }
@@ -137,6 +145,9 @@ pub trait FromIndexicalIterator<'a, T: IndexedValue + 'a, P: PointerFamily<'a>, 
     Sized
 {
     /// Converts an iterator into a collection within the given domain.
+    ///
+    /// # Panics
+    /// Panics if the iterator produces elements outside the domain.
     fn from_indexical_iter(
         iter: impl Iterator<Item = A>,
         domain: &P::Pointer<IndexedDomain<T>>,
@@ -148,6 +159,9 @@ pub trait IndexicalIteratorExt<'a, T: IndexedValue + 'a, P: PointerFamily<'a>, M
     Iterator + Sized
 {
     /// Like [`Iterator::collect`], except also takes as input a `domain`.
+    ///
+    /// # Panic
+    /// Panics if iterator produces values outside the domain.
     fn collect_indexical<B>(self, domain: &P::Pointer<IndexedDomain<T>>) -> B
     where
         B: FromIndexicalIterator<'a, T, P, M, Self::Item>,

@@ -15,17 +15,22 @@ impl BitSet for BitVec {
     }
 
     fn contains(&self, index: usize) -> bool {
+        // PANIC: ensured by caller.
         self[index]
     }
 
     fn insert(&mut self, index: usize) -> bool {
+        // PANIC: ensured by caller.
         let contained = self[index];
+        // PANIC: ensured by caller.
         self.set(index, true);
         !contained
     }
 
     fn remove(&mut self, index: usize) -> bool {
+        // PANIC: ensured by caller.
         let contained = self[index];
+        // PANIC: ensured by caller.
         self.set(index, false);
         contained
     }
@@ -70,6 +75,7 @@ impl BitSet for BitVec {
     }
 
     fn copy_from(&mut self, other: &Self) {
+        // PANIC: ensured by caller.
         self.copy_from_bitslice(other);
     }
 }

@@ -1,0 +1,32 @@
+[overrides]
+"index_vec::IndexSlice::<I, [T]>::iter_enumerated" = """
+# Panics
+
+The returned iterator might panic if the to-be-returned index would
+overflow a [`usize`].
+"""
+
+"wyz::comu::Address::<M, T>::with_ptr" = """
+# Panics
+If `func` returns a null pointer.
+"""
+
+"<bitvec::slice::BitSlice<T> as bitvec::field::BitField>::load_le" = """
+# Panics
+If `self.len() < bits_of::<I>`.
+"""
+
+"<bitvec::slice::BitSlice<T> as bitvec::field::BitField>::store_le" = """
+# Panics
+If `self.len() < bits_of::<I>`.
+"""
+
+"<bitvec::slice::BitSlice<T, bitvec::order::Msb0> as bitvec::field::BitField>::load_be" = """
+# Panics
+If `self.len() < bits_of::<I>`.
+"""
+
+"<bitvec::slice::BitSlice<T, bitvec::order::Msb0> as bitvec::field::BitField>::store_be" = """
+# Panics
+If `self.len() < bits_of::<I>`.
+"""

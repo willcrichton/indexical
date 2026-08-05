@@ -1,0 +1,172 @@
+# sniff-test configuration.
+#
+# The default configuration leaves all policy lists empty. This example includes
+# recommended Rust panic sinks and can be edited to match your threat model.
+
+[analysis]
+show-full-stack-trace = true
+report-roots = "public"
+
+# `profile` preserves Cargo/rustc's selected profile behavior.
+# `on` forces `-C overflow-checks=yes`; useful for checked release-mode audits.
+# `off` forces `-C overflow-checks=no`.
+# overflow-checks = "profile"
+
+# MIR inlining can hide call edges that are useful in panic traces.
+# `off` forces `-Z inline-mir=no` and disables MIR inline passes;
+# `on` forces `-Z inline-mir=yes`.
+# inline-mir = "off"
+
+# Concrete callable edges can be attributed to `erasure-sites` where a callable
+# becomes indirect, or `call-sites` where it is used.
+# callable-edge-attribution = "erasure-sites"
+
+# Marker lookup checks comments in macro definitions before walking outward to
+# macro callsites and the final source callsite. Use `source-callsite` for the
+# older callsite-only behavior.
+marker-probing = "macro-definition-first"
+
+# Ambiguous requirement names and shared proof markers default to failing closed.
+#
+# Instance budget per reachability query. Traversals that halt at the limit are
+# reported through the effect-specific analysis-incomplete lint instead of
+# passing silently.
+node-limit = 4096
+
+filtered-namespaces = ["bitvec::**"]
+
+[analysis.lints]
+panic-analysis-incomplete = "deny"
+safety-analysis-incomplete = "deny"
+# Use `warn` while auditing, or `allow` to accept squashed evidence.
+ambiguous-panic-marker = "deny"
+ambiguous-safety-marker = "deny"
+ambiguous-panic-requirement = "deny"
+ambiguous-safety-requirement = "deny"
+# Report-root selection problems warn by default.
+empty-report-roots = "warn"
+missing-report-root = "warn"
+dependency-panic-analysis-incomplete = "allow"
+dependency-safety-analysis-incomplete = "allow"
+
+[documentation]
+# Synthetic rustdoc markdown by namespace glob, loaded from TOML files relative
+# to this manifest. Useful while auditing external or generated APIs whose
+# documented behavior is known but not written in source yet.
+#
+# File format:
+# [overrides]
+# "crate::path::function" = """
+# # Panics
+# - requirement: condition
+# """
+override-files = ["overrides.toml"]
+
+[panics]
+# Crates, fully-qualified functions, or macro expansion paths whose internals should be treated as
+# opaque analysis boundaries. Patterns use Rust crate/path names: write
+# `proc_macro2`, not the package name `proc-macro2`.
+#
+# Use this list as the crate-local false-positive ledger too. When a reported
+# compiler assert is unreachable because this crate maintains an invariant,
+# ignore the function that introduces that assert and document the invariant
+# in a TOML comment next to the pattern.
+ignored-namespaces = [
+    "syn", "syn::**",
+    "quote", "quote::**",
+    "proc_macro2", "proc_macro2::**",
+    "rustc*", "rustc*::**",
+    "core::std::iter::Iterator::sum", # only with overflow-checks disabled
+    "bitvec::vec::traits::<impl std::clone::Clone for vec::BitVec<T, O>>::clone",
+]
+
+# Trusted crates or fully-qualified functions whose internals should be treated
+# as opaque API boundaries. Their `# Panics` documentation is assumed complete:
+# documented conditions become caller obligations, while an undocumented match
+# is trusted as non-panicking.
+#
+# Patterns match a definition's crate root, definition-site path, and impl
+# self-type path. A broad pattern such as `alloc::**` asserts that the matched
+# crate documents every caller-visible panic condition.
+trusted-panic-boundary-namespaces = [
+  "std::**", "core::**", "alloc::**",
+  "wyz::comu::Address::<M, T>::**",
+  "bitvec::slice::specialization::msb0::<impl bitvec::slice::BitSlice<T, bitvec::order::Msb0>>::sp_bitop_assign",
+  "bitvec::slice::specialization::lsb0::<impl bitvec::slice::BitSlice<T>>::sp_bitop_assign",
+  "bitvec::vec::BitVec::<T, O>::repeat"
+]
+
+# Callees that should be treated as direct panic sinks. When this overlaps with
+# trusted panic namespaces, the more precise namespace match wins; if
+# precision ties, panic sinks win.
+panic-sink-namespaces = [
+    "core::panicking::**",
+    "std::panicking::**",
+    "core::std::rt::panic_fmt",
+    "std::rt::panic_fmt",
+    "core::{option,result}::unwrap_failed",
+    "std::{option,result}::unwrap_failed",
+]
+
+[panics.lints]
+# `deny` emits an error and makes `cargo sniff-test` fail.
+# `warn` emits a warning without failing the run.
+# `allow` suppresses the finding from diagnostics and JSON reports.
+# Group default for local compiler-generated MIR assertions. Each exact
+# override is optional and also applies to dependency findings; a dependency
+# assertion without an exact override uses `cached-dependency-panic` below.
+compiler-assert = "deny"
+# compiler-assert-bounds-check = "deny"
+# compiler-assert-overflow = "deny"
+# compiler-assert-overflow-negation = "deny"
+# compiler-assert-division-by-zero = "deny"
+# compiler-assert-remainder-by-zero = "deny"
+# compiler-assert-resumed-after-return = "deny"
+# compiler-assert-resumed-after-panic = "deny"
+# compiler-assert-resumed-after-drop = "deny"
+# compiler-assert-misaligned-pointer-dereference = "deny"
+# compiler-assert-null-pointer-dereference = "deny"
+# compiler-assert-invalid-enum-construction = "deny"
+panic-invocation = "warn"
+# cached-dependency-panic = "warn"
+documented-panic = "warn"
+trusted-panic = "warn"
+# Calls whose target cannot be resolved or verified: undocumented trait
+# methods behind generic bounds, and opaque callables like function pointers.
+indirect-call-boundary = "allow"
+
+[safety]
+# Namespaces whose unsafe docs/call-site findings should be suppressed.
+# Matching a caller suppresses unsafe-call findings inside it; matching a callee
+# suppresses requirements for calls to that callee.
+ignored-namespaces = []
+
+# Trusted APIs whose implementations should be opaque. Their `# Safety`
+# documentation is assumed complete: documented requirements become caller
+# obligations, while an undocumented match is trusted as carrying none, even
+# when the function is declared `unsafe`.
+trusted-safety-boundary-namespaces = []
+
+[safety.lints]
+# `deny` emits an error and makes `cargo sniff-test` fail.
+# `warn` emits a warning without failing the run.
+# `allow` suppresses the finding from diagnostics and JSON reports.
+missing-safety-docs = "allow"
+unsafe-call-missing-justification = "allow"
+unsafe-call-missing-requirements = "allow"
+# Group default for non-call unsafe operations. Each exact override is optional
+# and wins over this fallback for local and dependency findings.
+unsafe-op-missing-justification = "allow"
+# raw-pointer-dereference-missing-justification = "warn"
+# mutable-static-access-missing-justification = "warn"
+# extern-static-access-missing-justification = "warn"
+# union-field-access-missing-justification = "warn"
+# unsafe-field-access-missing-justification = "warn"
+# layout-constrained-type-initialization-missing-justification = "warn"
+# unsafe-field-initialization-missing-justification = "warn"
+# layout-constrained-field-mutation-missing-justification = "warn"
+# layout-constrained-field-borrow-missing-justification = "warn"
+# inline-assembly-missing-justification = "warn"
+# unsafe-binder-cast-missing-justification = "warn"
+safety-obligation-missing-justification = "allow"
+safety-obligation-missing-requirements = "allow"

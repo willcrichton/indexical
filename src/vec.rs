@@ -49,16 +49,40 @@ where
     }
 
     /// Returns an immutable reference to a value for a given index.
+    ///
+    /// # Panics
+    /// Panics if `idx` is not in domain.
     pub fn get<M>(&self, idx: impl ToIndex<K, M>) -> &V {
         let idx = idx.to_index(&self.domain);
-        debug_assert!(self.domain.contains_index(idx));
+        // SAFETY: `to_index` ensures `idx` is in bounds
+        unsafe { self.get_unchecked(idx) }
+    }
+
+    /// Returns a mutable reference to a value for a given index.
+    ///
+    /// # Panics
+    /// Panics if `idx` is not in domain.
+    pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
+        let idx = idx.to_index(&self.domain);
+        // SAFETY: `to_index` ensures `idx` is in bounds
+        unsafe { self.get_unchecked_mut(idx) }
+    }
+
+    /// Returns an immutable reference to a value for a given index.
+    ///
+    /// # Safety
+    /// `idx` must be in range of `self`.
+    pub unsafe fn get_unchecked(&self, idx: K::Index) -> &V {
+        // SAFETY: ensured by caller
         unsafe { self.vec.get_unchecked(idx.index()) }
     }
 
     /// Returns a mutable reference to a value for a given index.
-    pub fn get_mut<M>(&mut self, idx: impl ToIndex<K, M>) -> &mut V {
-        let idx = idx.to_index(&self.domain);
-        debug_assert!(self.domain.contains_index(idx));
+    ///
+    /// # Safety
+    /// `idx` must be in range of `self`.
+    pub unsafe fn get_unchecked_mut(&mut self, idx: K::Index) -> &mut V {
+        // SAFETY: ensured by caller
         unsafe { self.vec.get_unchecked_mut(idx.index()) }
     }
 
@@ -87,7 +111,7 @@ where
     /// Returns multiple mutable references to disjoint indices.
     ///
     /// # Errors
-    /// Returns [`GetDisjointMutError`] if not disjoint or in-bounds.    
+    /// Returns [`GetDisjointMutError`] if not disjoint or in-bounds.
     pub fn get_disjoint_mut<const N: usize>(
         &mut self,
         indices: [K::Index; N],
@@ -141,6 +165,7 @@ where
     type Output = V;
 
     fn index(&self, index: K::Index) -> &Self::Output {
+        // PANIC: ensured by caller.
         self.get(index)
     }
 }
@@ -151,6 +176,7 @@ where
     P: PointerFamily<'a>,
 {
     fn index_mut(&mut self, index: K::Index) -> &mut Self::Output {
+        // PANIC: ensured by caller.
         self.get_mut(index)
     }
 }

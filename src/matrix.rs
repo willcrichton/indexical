@@ -42,6 +42,9 @@ where
     }
 
     /// Inserts a pair `(row, col)` into the matrix, returning true if `self` changed.
+    ///
+    /// # Panics
+    /// Panics if `col` is out of bounds.
     pub fn insert<M>(&mut self, row: R, col: impl ToIndex<C, M>) -> bool {
         let col = col.to_index(&self.col_domain);
         self.ensure_row(row).insert(col)
@@ -61,10 +64,11 @@ where
         self.ensure_row(from.clone());
         self.ensure_row(to.clone());
 
-        // SAFETY: `from` != `to` therefore this is a disjoint mutable borrow
         let [Some(from), Some(to)] =
+            // SAFETY: `from` != `to` therefore this is a disjoint mutable borrow
             (unsafe { self.matrix.get_disjoint_unchecked_mut([&from, &to]) })
         else {
+            // PANIC: ensure_row ensures that `from` and `to` both exist.
             unreachable!()
         };
         to.union_changed(from)
@@ -118,6 +122,7 @@ where
         let mut mtx = IndexMatrix::new(row_domain);
         for (row, cols) in self.rows() {
             for col in cols.indices() {
+                // PANIC: row is always in-bounds
                 mtx.insert(col, row.clone());
             }
         }
@@ -183,6 +188,7 @@ where
     P: PointerFamily<'a>,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // PANIC: calling `entries` satisfies `finish`'s precondition
         f.debug_map().entries(self.rows()).finish()
     }
 }
